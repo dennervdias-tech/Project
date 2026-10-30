@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap">
 <style>
-/* Layout: uma tela só, coluna estreita — cabeçalho, cenário com o bichinho, barras de status, botões de ação. */
+/* Layout: uma tela só, coluna estreita — cabeçalho, cenário vivo em canvas, barras de status, botões de ação. */
 :root {
   --bg: #EEE8F6;
   --surface: #FFFFFF;
@@ -26,14 +26,9 @@
   --line: #DCD3EA;
   --accent: #E0457B;
   --accent-ink: #FFFFFF;
-  --sky: #CFE6F5;
-  --sky-night: #2E3560;
-  --floor: #F4D9BE;
-  --floor-night: #4A3D57;
   --good: #34995F;
   --warn: #D9961A;
   --crit: #D9483F;
-  --egg: #FFF6E5;
   --font-display: "Baloo 2", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
   --font-body: "Nunito", ui-rounded, system-ui, -apple-system, sans-serif;
   color-scheme: light;
@@ -42,16 +37,14 @@
   :root:not([data-theme="light"]) {
     --bg: #17131F; --surface: #231D30; --ink: #F2EDF9; --muted: #A79FBA; --line: #3A3149;
     --accent: #FF6F9F; --accent-ink: #1B1024;
-    --sky: #3B4A72; --sky-night: #1B2040; --floor: #5A4A55; --floor-night: #30283A;
-    --good: #5CC98A; --warn: #F0B54A; --crit: #FF7A70; --egg: #FBEFD9;
+    --good: #5CC98A; --warn: #F0B54A; --crit: #FF7A70;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #17131F; --surface: #231D30; --ink: #F2EDF9; --muted: #A79FBA; --line: #3A3149;
   --accent: #FF6F9F; --accent-ink: #1B1024;
-  --sky: #3B4A72; --sky-night: #1B2040; --floor: #5A4A55; --floor-night: #30283A;
-  --good: #5CC98A; --warn: #F0B54A; --crit: #FF7A70; --egg: #FBEFD9;
+  --good: #5CC98A; --warn: #F0B54A; --crit: #FF7A70;
   color-scheme: dark;
 }
 
@@ -64,6 +57,7 @@ body {
   color: var(--ink);
   font: 500 16px/1.4 var(--font-body);
   -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
   overscroll-behavior: none;
 }
 .app {
@@ -94,101 +88,28 @@ body {
 
 /* Cenário */
 .scene {
-  position: relative; flex: 1; min-height: 240px; overflow: hidden;
-  border-radius: 28px;
-  background: linear-gradient(var(--sky) 0 70%, var(--floor) 70% 100%);
-  transition: background .6s;
-  touch-action: manipulation;
+  position: relative; flex: 1; min-height: 260px; overflow: hidden;
+  border-radius: 28px; background: #7EC8F2;
 }
-.scene.night { background: linear-gradient(var(--sky-night) 0 70%, var(--floor-night) 70% 100%); }
-.scene::before {
-  content: ""; position: absolute; inset: 0 0 30% 0; opacity: 0; transition: opacity .6s;
-  background:
-    radial-gradient(2px 2px at 15% 20%, #fff 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 35% 45%, #fff 50%, transparent 51%),
-    radial-gradient(2px 2px at 62% 18%, #fff 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 80% 40%, #fff 50%, transparent 51%),
-    radial-gradient(2px 2px at 90% 12%, #fff 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 48% 8%, #fff 50%, transparent 51%);
-}
-.scene.night::before { opacity: .9; }
-.sun {
-  position: absolute; top: 18px; right: 22px; width: 44px; height: 44px; border-radius: 50%;
-  background: #FFD45C; box-shadow: 0 0 0 8px rgb(255 212 92 / .25);
-  transition: background .6s, box-shadow .6s;
-}
-.scene.night .sun { background: #F4F0DC; box-shadow: inset -12px -4px 0 0 var(--sky-night); }
-
-.pet-wrap {
-  position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%);
-  border: 0; background: none; padding: 0; cursor: pointer; line-height: 0;
-}
-.pet-wrap:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 24px; }
-.pet-wrap svg { width: calc(var(--scale, 1) * min(220px, 52vw)); height: auto; overflow: visible; transition: width .8s; }
-
-.bob { animation: bob 2.6s ease-in-out infinite; transform-origin: 100px 180px; }
-@keyframes bob { 50% { transform: translateY(-4px) scaleY(1.02); } }
-.asleep .bob { animation-duration: 4.5s; }
-.blink { animation: blink 4.2s infinite; transform-origin: 100px 105px; }
-@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
-
-.jump { animation: jump .6s cubic-bezier(.3,1.6,.5,1); }
-@keyframes jump { 40% { transform: translate(-50%, -38px); } }
-.wiggle { animation: wiggle .5s; }
-@keyframes wiggle { 25% { transform: translateX(-50%) rotate(-8deg); } 75% { transform: translateX(-50%) rotate(8deg); } }
-.chomp { animation: chomp .5s; }
-@keyframes chomp { 30% { transform: translateX(-50%) scale(1.08, .92); } 60% { transform: translateX(-50%) scale(.96, 1.04); } }
-
-/* Partes do bichinho */
-.body { fill: var(--pet, #FF8FB1); }
-.belly { fill: #fff; opacity: .45; }
-.ink { fill: #2A2140; }
-.shine { fill: #fff; }
-.stroke { fill: none; stroke: #2A2140; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
-.cheek { fill: #FF5E8A; opacity: .35; }
-.shadow { fill: #000; opacity: .12; }
-.eyes, .mouth, .brows, .acc { display: none; }
-.pet[data-mood="happy"] .eyes.happy, .pet[data-mood="happy"] .m-happy,
-.pet[data-mood="ok"] .eyes.open, .pet[data-mood="ok"] .m-ok,
-.pet[data-mood="sad"] .eyes.open, .pet[data-mood="sad"] .brows, .pet[data-mood="sad"] .m-sad,
-.pet[data-mood="sleep"] .eyes.closed, .pet[data-mood="sleep"] .m-sleep { display: inline; }
-.pet[data-acc="bow"] .acc-bow, .pet[data-acc="glasses"] .acc-glasses,
-.pet[data-acc="crown"] .acc-crown, .pet[data-acc="flag"] .acc-flag { display: inline; }
-.egg-shell { fill: var(--egg); stroke: #2A2140; stroke-width: 4; }
-.egg-spot { fill: var(--accent); opacity: .55; }
-.crack { transition: opacity .3s; }
-
-.zzz {
-  position: absolute; left: 58%; bottom: 52%; font: 800 1.4rem var(--font-display); color: #fff;
-  opacity: 0; pointer-events: none;
-}
-.asleep .zzz { animation: zzz 2.4s ease-in infinite; }
-@keyframes zzz { 0% { opacity: 0; transform: translate(0, 0) scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(26px, -50px) scale(1.2); } }
-
+.scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
 .bubble {
-  position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
-  max-width: calc(100% - 100px); padding: 8px 14px; border-radius: 18px;
-  background: var(--surface); color: var(--ink); font-weight: 800; font-size: .95rem; text-align: center;
-  box-shadow: 0 4px 0 rgb(0 0 0 / .08);
-  transition: opacity .25s, transform .25s;
+  position: absolute; left: 50%; top: 40px; transform: translate(-50%, -100%);
+  max-width: min(78%, 260px); padding: 8px 14px; border-radius: 18px;
+  background: #FFFFFF; color: #2A2140; font-weight: 800; font-size: .95rem; text-align: center;
+  box-shadow: 0 4px 0 rgb(0 0 0 / .1);
+  pointer-events: none;
+  transition: opacity .25s;
 }
-.bubble.off { opacity: 0; transform: translate(-50%, -6px); }
-
-.poops { position: absolute; inset: auto 0 6% 0; height: 0; }
-.poop { position: absolute; bottom: 0; font-size: 1.7rem; line-height: 1; }
-
-.float {
-  position: absolute; pointer-events: none; font: 800 1.4rem var(--font-display); color: var(--accent);
-  animation: floatUp 1s ease-out forwards;
+.bubble::after {
+  content: ""; position: absolute; left: 50%; bottom: -7px; margin-left: -7px;
+  border: 7px solid transparent; border-bottom: 0; border-top-color: #FFFFFF;
 }
-@keyframes floatUp { from { opacity: 1; transform: translate(-50%, 0) scale(.8); } to { opacity: 0; transform: translate(-50%, -70px) scale(1.3); } }
-
-.star {
-  position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border: 0; border-radius: 50%;
-  background: rgb(255 255 255 / .55); color: #F5B400; font-size: 2.2rem; line-height: 56px; cursor: pointer;
-  animation: pop .25s ease-out;
+.bubble.off { opacity: 0; }
+.sensor-chip {
+  position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px;
+  padding: 7px 12px; border: 0; border-radius: 99px;
+  background: rgb(255 255 255 / .85); color: #2A2140; font: 800 .8rem var(--font-body); cursor: pointer;
 }
-@keyframes pop { from { transform: scale(0); } }
 
 /* Status */
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
@@ -206,18 +127,19 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 10px 4px 8px; border: 1.5px solid var(--line); border-radius: 20px;
   background: var(--surface); color: var(--ink); font: 800 .8rem var(--font-body); cursor: pointer;
-  transition: transform .1s;
+  transition: transform .1s, background .2s, border-color .2s;
 }
 .act span { font-size: 1.6rem; line-height: 1.1; }
 .act:active { transform: scale(.94); }
 .act:disabled { opacity: .45; }
-.act:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, .primary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.act[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.act:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, .primary:focus-visible, .sensor-chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 /* Painel de personalização */
 .sheet-back { position: fixed; inset: 0; background: rgb(10 5 20 / .45); z-index: 20; }
 .sheet {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 21;
-  max-width: 480px; margin: 0 auto; max-height: 85%; overflow-y: auto;
+  max-width: 480px; margin: 0 auto; max-height: 88%; overflow-y: auto;
   display: flex; flex-direction: column; gap: 18px;
   padding-block: 20px max(20px, env(safe-area-inset-bottom, 0px));
   padding-left: max(20px, env(safe-area-inset-left, 0px));
@@ -232,7 +154,7 @@ body {
   padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px;
   background: var(--bg); color: var(--ink); font: 700 1rem var(--font-body);
 }
-.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
 .swatch[aria-pressed="true"] { border-color: var(--ink); }
 .chip {
@@ -240,6 +162,7 @@ body {
   background: var(--bg); color: var(--ink); font: 800 .85rem var(--font-body); cursor: pointer;
 }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.status { margin: 0; color: var(--muted); font-size: .85rem; font-weight: 700; }
 .sheet-foot { display: flex; gap: 10px; align-items: center; }
 .primary {
   flex: 1; padding: 14px; border: 0; border-radius: 16px;
@@ -247,6 +170,7 @@ body {
 }
 .danger { background: none; border: 0; color: var(--crit); font: 800 .85rem var(--font-body); cursor: pointer; padding: 10px; }
 .hint { margin: 0; color: var(--muted); font-size: .8rem; }
+.hint b { color: var(--ink); }
 
 @media (max-height: 640px) {
   .app { gap: 10px; }
@@ -254,7 +178,7 @@ body {
   .act span { font-size: 1.3rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
 }
 </style>
 </head>
@@ -265,79 +189,13 @@ body {
       <h1 id="name">Bolinha</h1>
       <p id="age">Um ovo misterioso</p>
     </div>
-    <button class="icon-btn" id="openSheet" aria-label="Personalizar">✎</button>
+    <button class="icon-btn" id="openSheet" aria-label="Personalizar e ajustes">✎</button>
   </header>
 
-  <section class="scene" id="scene" aria-label="Casinha do bichinho">
-    <div class="sun"></div>
+  <section class="scene" id="scene" aria-label="Casinha do bichinho. Toque, deslize ou segure para interagir.">
+    <canvas id="cv"></canvas>
     <div class="bubble off" id="bubble" role="status" aria-live="polite"></div>
-    <div class="poops" id="poops"></div>
-    <div class="zzz">z</div>
-
-    <button class="pet-wrap" id="petWrap" aria-label="Fazer carinho">
-      <svg id="egg" viewBox="0 0 200 200" aria-hidden="true">
-        <ellipse class="shadow" cx="100" cy="190" rx="50" ry="7"/>
-        <g class="bob">
-          <path class="egg-shell" d="M100 30C145 30 165 105 165 130C165 168 136 188 100 188C64 188 35 168 35 130C35 105 55 30 100 30Z"/>
-          <ellipse class="egg-spot" cx="78" cy="88" rx="12" ry="9"/>
-          <ellipse class="egg-spot" cx="128" cy="120" rx="15" ry="11"/>
-          <ellipse class="egg-spot" cx="85" cy="152" rx="10" ry="7"/>
-          <path id="crack" class="stroke crack" style="opacity:0" d="M52 112L68 102L82 116L98 98L114 114L130 100L148 110"/>
-        </g>
-      </svg>
-
-      <svg id="pet" class="pet" viewBox="0 0 200 200" data-mood="ok" data-acc="none" hidden aria-hidden="true">
-        <ellipse class="shadow" cx="100" cy="184" rx="56" ry="8"/>
-        <g class="bob">
-          <g class="acc acc-flag">
-            <path class="stroke" d="M172 64V156"/>
-            <rect x="172" y="60" width="30" height="4.5" fill="#E40303"/>
-            <rect x="172" y="64.5" width="30" height="4.5" fill="#FF8C00"/>
-            <rect x="172" y="69" width="30" height="4.5" fill="#FFED00"/>
-            <rect x="172" y="73.5" width="30" height="4.5" fill="#008026"/>
-            <rect x="172" y="78" width="30" height="4.5" fill="#004DFF"/>
-            <rect x="172" y="82.5" width="30" height="4.5" fill="#750787"/>
-            <ellipse class="body" cx="166" cy="132" rx="11" ry="9"/>
-          </g>
-          <circle class="body" cx="70" cy="62" r="15"/>
-          <circle class="body" cx="130" cy="62" r="15"/>
-          <ellipse class="body" cx="100" cy="116" rx="68" ry="62"/>
-          <ellipse class="belly" cx="100" cy="138" rx="40" ry="30"/>
-          <ellipse class="body" cx="72" cy="174" rx="17" ry="9"/>
-          <ellipse class="body" cx="128" cy="174" rx="17" ry="9"/>
-
-          <g class="eyes open"><g class="blink">
-            <ellipse class="ink" cx="78" cy="105" rx="7.5" ry="9.5"/><circle class="shine" cx="80.5" cy="101.5" r="2.8"/>
-            <ellipse class="ink" cx="122" cy="105" rx="7.5" ry="9.5"/><circle class="shine" cx="124.5" cy="101.5" r="2.8"/>
-          </g></g>
-          <g class="eyes happy"><path class="stroke" d="M69 108Q78 96 87 108"/><path class="stroke" d="M113 108Q122 96 131 108"/></g>
-          <g class="eyes closed"><path class="stroke" d="M69 104Q78 113 87 104"/><path class="stroke" d="M113 104Q122 113 131 104"/></g>
-          <g class="brows"><path class="stroke" d="M67 88L86 93"/><path class="stroke" d="M133 88L114 93"/></g>
-
-          <ellipse class="cheek" cx="62" cy="123" rx="10" ry="6"/>
-          <ellipse class="cheek" cx="138" cy="123" rx="10" ry="6"/>
-
-          <path class="mouth m-happy stroke" d="M87 124Q100 140 113 124"/>
-          <path class="mouth m-ok stroke" d="M92 126Q100 132 108 126"/>
-          <path class="mouth m-sad stroke" d="M89 133Q100 122 111 133"/>
-          <ellipse class="mouth m-sleep ink" cx="100" cy="129" rx="4" ry="3"/>
-
-          <g class="acc acc-bow">
-            <path d="M100 58L80 45V71Z" fill="#E0457B"/><path d="M100 58L120 45V71Z" fill="#E0457B"/>
-            <circle cx="100" cy="58" r="6" fill="#B82E5E"/>
-          </g>
-          <g class="acc acc-glasses">
-            <circle cx="78" cy="105" r="15" fill="rgb(255 255 255 / .18)" stroke="#2A2140" stroke-width="4"/>
-            <circle cx="122" cy="105" r="15" fill="rgb(255 255 255 / .18)" stroke="#2A2140" stroke-width="4"/>
-            <path class="stroke" d="M93 104H107"/>
-          </g>
-          <g class="acc acc-crown">
-            <path d="M76 60L82 34L93 49L100 28L107 49L118 34L124 60Z" fill="#F5C542" stroke="#2A2140" stroke-width="4" stroke-linejoin="round"/>
-            <circle cx="100" cy="50" r="4" fill="#E0457B"/>
-          </g>
-        </g>
-      </svg>
-    </button>
+    <button class="sensor-chip" id="sensorChip" hidden>📳 Ativar sacudir</button>
   </section>
 
   <section class="stats" aria-label="Como o bichinho está">
@@ -351,7 +209,7 @@ body {
     <button class="act" id="feed"><span>🍓</span>Comer</button>
     <button class="act" id="play"><span>⭐</span>Brincar</button>
     <button class="act" id="sleep"><span>🌙</span><b id="sleepLabel">Dormir</b></button>
-    <button class="act" id="bath"><span>🫧</span>Banho</button>
+    <button class="act" id="bath" aria-pressed="false"><span>🧽</span><b id="bathLabel">Banho</b></button>
   </nav>
 </main>
 
@@ -370,7 +228,17 @@ body {
     <span class="label">Acessório</span>
     <div class="row" id="accs"></div>
   </div>
-  <p class="hint">No iPhone: abra no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”.</p>
+  <div class="field">
+    <span class="label">iPhone</span>
+    <div class="row">
+      <button class="chip" id="sensorBtn">📳 Sacudir e inclinar</button>
+      <button class="chip" id="soundBtn" aria-pressed="true">🔊 Sons</button>
+      <button class="chip" id="hapticBtn" aria-pressed="true">〰️ Vibração</button>
+    </div>
+    <p class="status" id="sensorStatus"></p>
+  </div>
+  <p class="hint"><b>Como brincar:</b> toque pra dar um “boop”, toque duas vezes pra ele pular, deslize o dedo pra fazer carinho, segure pra pegar no colo e arremessar. Sacuda o celular e incline pros lados.</p>
+  <p class="hint"><b>Instalar:</b> no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”.</p>
   <div class="sheet-foot">
     <button class="danger" id="reset">Começar de novo</button>
     <button class="primary" id="closeSheet">Pronto</button>
@@ -379,24 +247,36 @@ body {
 
 <script>
 (() => {
+  'use strict';
   const KEY = 'bichinho-v1';
   const HOUR = 36e5, DAY = 864e5, POOP_EVERY = 2.5 * HOUR;
   const COLORS = [['#FF8FB1', 'Chiclete'], ['#8FD4FF', 'Céu'], ['#A8E68A', 'Limão'], ['#FFC86B', 'Manga'], ['#C9A3FF', 'Lavanda'], ['#FF9E7A', 'Pêssego']];
   const ACCS = [['none', 'Nada'], ['bow', 'Laço'], ['glasses', 'Óculos'], ['crown', 'Coroa'], ['flag', 'Bandeirinha']];
-  const LABELS = { fome: 'Barriga', feliz: 'Alegria', energia: 'Energia', higiene: 'Higiene' };
+  const PRIDE = ['#E40303', '#FF8C00', '#FFED00', '#008026', '#004DFF', '#750787'];
 
   const $ = s => document.querySelector(s);
-  const clamp = v => Math.max(0, Math.min(100, v));
+  const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = a => a[Math.floor(Math.random() * a.length)];
   const now = () => Date.now();
+  const TAU = Math.PI * 2;
 
+  /* ---------- Estado salvo ---------- */
   const fresh = () => ({
-    name: 'Bolinha', born: null, taps: 0, last: now(), lastPoop: now(),
-    fome: 80, feliz: 80, energia: 85, higiene: 95, poops: 0, sleeping: false,
-    color: COLORS[0][0], acc: 'none'
+    name: 'Bolinha', born: null, taps: 0, last: now(), lastPoop: now(), lastSeen: now(),
+    fome: 80, feliz: 80, energia: 85, higiene: 95, poops: 0, poopX: [], sleeping: false,
+    color: COLORS[0][0], acc: 'none', tips: false, sound: true, haptics: true
   });
   function load() {
-    try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? { ...fresh(), ...s } : null; }
-    catch (e) { return null; }
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (!s || typeof s !== 'object') return null;
+      const m = { ...fresh(), ...s };
+      while (m.poopX.length < m.poops) m.poopX.push(rand(.08, .92));
+      m.poopX.length = m.poops;
+      return m;
+    } catch (e) { return null; }
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   let S = load() || fresh();
@@ -410,19 +290,20 @@ body {
     S.fome = clamp(S.fome - 7 * h);
     if (S.sleeping) {
       S.energia = clamp(S.energia + 22 * h);
-      if (S.energia >= 100) S.sleeping = false;
+      if (S.energia >= 100) { S.sleeping = false; say('Acordei! ☀️'); }
     } else {
       S.energia = clamp(S.energia - 5 * h);
     }
     if (t - S.lastPoop > 10 * POOP_EVERY) S.lastPoop = t - POOP_EVERY;
-    while (t - S.lastPoop > POOP_EVERY) { S.lastPoop += POOP_EVERY; if (S.poops < 3) S.poops++; }
+    while (t - S.lastPoop > POOP_EVERY) {
+      S.lastPoop += POOP_EVERY;
+      if (S.poops < 3) { S.poops++; S.poopX.push(rand(.08, .92)); }
+    }
     S.higiene = clamp(S.higiene - (3 + S.poops * 3) * h);
     const sadness = 4 + (S.fome < 25 ? 6 : 0) + (S.higiene < 25 ? 4 : 0) + (S.energia < 15 ? 3 : 0);
     S.feliz = clamp(S.feliz - sadness * h);
   }
-
   function mood() {
-    if (S.sleeping) return 'sleep';
     const min = Math.min(S.fome, S.feliz, S.energia, S.higiene);
     if (min < 22) return 'sad';
     if ((S.fome + S.feliz + S.energia + S.higiene) / 4 > 70) return 'happy';
@@ -430,12 +311,12 @@ body {
   }
   function stage() {
     const d = (now() - S.born) / DAY;
-    if (d < 1) return ['Bebê', .72];
-    if (d < 4) return ['Jovem', .86];
+    if (d < 1) return ['Bebê', .78];
+    if (d < 4) return ['Jovem', .9];
     return ['Adulte', 1];
   }
   function ageText() {
-    if (!S.born) return S.taps ? 'O ovo está se mexendo…' : 'Um ovo misterioso · toque nele';
+    if (!S.born) return S.taps ? 'O ovo está se mexendo…' : 'Um ovo misterioso · toque ou sacuda';
     const ms = now() - S.born;
     const t = ms < HOUR ? Math.max(1, Math.floor(ms / 6e4)) + ' min'
       : ms < DAY ? Math.floor(ms / HOUR) + ' h'
@@ -443,46 +324,1186 @@ body {
     return stage()[0] + ' · ' + t + (S.sleeping ? ' · dormindo' : '');
   }
   function needMsg() {
-    if (S.sleeping) return null;
+    if (S.sleeping || !S.born) return null;
     const needs = [['fome', 'Tô com fominha 🥺'], ['higiene', 'Preciso de um banho…'], ['energia', 'Tô morrendo de sono'], ['feliz', 'Brinca comigo?']];
     const [k, msg] = needs.reduce((a, b) => S[b[0]] < S[a[0]] ? b : a);
     return S[k] < 35 ? msg : null;
   }
 
-  const scene = $('#scene'), wrap = $('#petWrap'), pet = $('#pet'), egg = $('#egg');
+  /* ---------- Som (sintetizado, sem arquivos) ---------- */
+  let actx = null;
+  function audio() {
+    if (!S.sound) return null;
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  }
+  function tone(f1, f2, dur, type = 'sine', vol = .15, delay = 0) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + delay;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f1, t);
+    o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + .015);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + dur + .02);
+  }
+  function noise(dur, vol = .12, freq = 1200) {
+    const a = audio(); if (!a) return;
+    const len = Math.floor(a.sampleRate * dur);
+    const buf = a.createBuffer(1, len, a.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    s.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; g.gain.value = vol;
+    s.connect(f).connect(g).connect(a.destination);
+    s.start();
+  }
+  const sfx = {
+    boop: () => tone(480, 900, .12, 'sine', .18),
+    giggle: () => [0, .08, .16].forEach((d, i) => tone(900 + i * 140, 1300 + i * 140, .07, 'triangle', .1, d)),
+    chomp: () => noise(.07, .3, 700),
+    pop: () => tone(700, 1500, .09, 'square', .05),
+    bump: () => tone(200, 80, .16, 'sine', .3),
+    whee: () => tone(380, 1200, .35, 'triangle', .1),
+    splash: () => noise(.2, .12, 2600),
+    dizzy: () => tone(900, 250, .6, 'sine', .08),
+    yawn: () => tone(320, 170, .7, 'sine', .08),
+    sad: () => tone(500, 300, .25, 'sine', .08),
+    hatch: () => [0, .1, .2, .32].forEach((d, i) => tone(500 + i * 180, 800 + i * 220, .14, 'triangle', .12, d)),
+    purr: () => tone(90, 70, .25, 'sawtooth', .025)
+  };
 
-  function render() {
-    tick();
-    const hatched = !!S.born;
-    egg.toggleAttribute('hidden', hatched);
-    pet.toggleAttribute('hidden', !hatched);
-    $('#crack').style.opacity = S.taps >= 3 ? 1 : 0;
-    if (hatched) {
-      pet.dataset.mood = mood();
-      pet.dataset.acc = S.acc;
-      pet.style.setProperty('--pet', S.color);
-      wrap.style.setProperty('--scale', stage()[1]);
-    } else {
-      wrap.style.setProperty('--scale', .78);
+  /* ---------- Vibração (no iPhone usa o "tique" do interruptor nativo do iOS 18+) ---------- */
+  const hapticEl = (() => {
+    const l = document.createElement('label');
+    l.setAttribute('aria-hidden', 'true');
+    l.style.cssText = 'position:fixed;left:-200px;top:0;opacity:0;pointer-events:none';
+    const i = document.createElement('input');
+    i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+    l.append(i); document.body.append(l);
+    return l;
+  })();
+  let lastHaptic = 0;
+  function haptic() {
+    if (!S.haptics) return;
+    const t = performance.now();
+    if (t - lastHaptic < 70) return;
+    lastHaptic = t;
+    if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} return; }
+    try { hapticEl.click(); } catch (e) {}
+  }
+
+  /* ---------- Sensores: sacudir e inclinar ---------- */
+  const sensors = {
+    needsPerm: typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function',
+    on: false, got: false, denied: false, gamma: 0, asked: false
+  };
+  let lastAcc = null;
+  function onMotion(e) {
+    const a = e.accelerationIncludingGravity;
+    if (!a || a.x == null) return;
+    sensors.got = true;
+    if (lastAcc) {
+      const d = Math.abs(a.x - lastAcc.x) + Math.abs(a.y - lastAcc.y) + Math.abs(a.z - lastAcc.z);
+      if (d > 12) addShake(d * .7);
     }
+    lastAcc = { x: a.x, y: a.y, z: a.z };
+  }
+  function onOrient(e) {
+    if (e.gamma == null) return;
+    sensors.got = true;
+    sensors.gamma = clamp(e.gamma, -60, 60);
+  }
+  function listen() {
+    if (sensors.on) return;
+    window.addEventListener('devicemotion', onMotion);
+    window.addEventListener('deviceorientation', onOrient);
+    sensors.on = true;
+    setTimeout(updateSensorUI, 1500);
+  }
+  async function enableSensors() {
+    sensors.asked = true;
+    try {
+      if (sensors.needsPerm) {
+        const r = await DeviceMotionEvent.requestPermission();
+        if (r !== 'granted') { sensors.denied = true; updateSensorUI(); return; }
+        if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) {
+          await DeviceOrientationEvent.requestPermission().catch(() => {});
+        }
+      }
+      listen();
+    } catch (e) { sensors.denied = true; }
+    updateSensorUI();
+  }
+  function updateSensorUI() {
+    const st = $('#sensorStatus'), chip = $('#sensorChip');
+    let msg;
+    if (sensors.denied) msg = 'Permissão negada. Feche e abra o app pra tentar de novo.';
+    else if (sensors.on && sensors.got) msg = 'Sensores ligados ✓ Sacuda ou incline o celular.';
+    else if (sensors.on) msg = 'Este lugar não recebe o movimento do celular. No app instalado na tela de início funciona. Aqui, segure o bichinho e chacoalhe com o dedo.';
+    else msg = 'Toque pra deixar o bichinho sentir o celular sacudindo e inclinando.';
+    st.textContent = msg;
+    chip.hidden = !(sensors.needsPerm && !sensors.on && !sensors.denied && S.born);
+  }
+  if (!sensors.needsPerm) listen();
+
+  /* ---------- Cenário e física ---------- */
+  const scene = $('#scene'), cv = $('#cv'), ctx = cv.getContext('2d');
+  const bubble = $('#bubble');
+  let W = 300, H = 400, DPR = 1, floorY = 320;
+
+  const N = 26;
+  const pet = {
+    x: 150, y: 200, vx: 0, vy: 0, pvx: 0, pvy: 0, r: 70, grounded: false, held: false,
+    pts: Array.from({ length: N }, (_, i) => ({ a: i / N * TAU, ox: 0, oy: 0, vx: 0, vy: 0 })),
+    lookX: 0, lookY: 0, blink: 0, nextBlink: 2, spawn: 1, flip: 1
+  };
+  const egg = { rot: 0, vrot: 0 };
+  let particles = [], stars = [], food = null, game = null, bath = null;
+  let shake = 0, shakeCool = 0;
+  const T = { surprised: 0, dizzy: 0, eat: 0, bliss: 0, grumpy: 0, happy: 0, peek: 0, idle: rand(5, 9), yawn: 0 };
+  let clockT = 0;
+  const ptr = { down: false, x: 0, y: 0, sx: 0, sy: 0, t0: 0, moved: 0, onPet: false, hist: [], stroke: 0, lastTap: 0, lastVX: 0, active: 0 };
+
+  const skyStars = Array.from({ length: 40 }, () => ({ x: Math.random(), y: Math.random() * .6, s: rand(.6, 1.8), p: rand(0, TAU) }));
+  const clouds = Array.from({ length: 4 }, (_, i) => ({ x: Math.random(), y: rand(.08, .32), s: rand(.7, 1.3), v: rand(.004, .012), d: i % 2 ? .5 : 1 }));
+  const flowers = Array.from({ length: 9 }, () => ({ x: Math.random(), y: rand(.25, .85), c: pick(['#FFFFFF', '#FFD23F', '#FF8FB1', '#C9A3FF']) }));
+
+  function resize() {
+    const r = scene.getBoundingClientRect();
+    const oldW = W;
+    W = Math.max(200, r.width); H = Math.max(200, r.height);
+    DPR = Math.min(window.devicePixelRatio || 1, 3);
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    floorY = H * .8;
+    pet.x = pet.x / oldW * W;
+    pet.x = clamp(pet.x, 40, W - 40);
+    setRadius();
+  }
+  function setRadius() {
+    const base = Math.min(W * .22, H * .2, 100);
+    pet.r = base * (S.born ? stage()[1] : .9);
+  }
+
+  /* Partículas */
+  function emit(type, x, y, o = {}) {
+    particles.push({ type, x, y, vx: o.vx ?? rand(-40, 40), vy: o.vy ?? rand(-160, -90), life: 0, max: o.max ?? 1.1, size: o.size ?? 18, rot: rand(0, TAU), vr: o.vr ?? rand(-3, 3), txt: o.txt, color: o.color, g: o.g ?? 0 });
+  }
+  function burst(type, x, y, n, o = {}) {
+    for (let i = 0; i < n; i++) {
+      const a = rand(0, TAU), sp = rand(o.min ?? 80, o.maxV ?? 260);
+      emit(type, x, y, { ...o, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60 });
+    }
+  }
+
+  /* Fala */
+  let sayUntil = 0;
+  function say(text, ms = 2600) {
+    if (!text) return;
+    bubble.textContent = text;
+    bubble.classList.remove('off');
+    sayUntil = performance.now() + ms;
+  }
+
+  /* Reações */
+  function addShake(v) {
+    shake = Math.min(shake + v, 420);
+  }
+  function poke(px, py, strength) {
+    pet.pts.forEach(p => {
+      const wx = pet.x + p.ox, wy = pet.y + p.oy;
+      const d = Math.hypot(wx - px, wy - py);
+      const f = Math.max(0, 1 - d / (pet.r * 1.3)) * strength;
+      const nx = (wx - pet.x) / (Math.hypot(wx - pet.x, wy - pet.y) || 1);
+      const ny = (wy - pet.y) / (Math.hypot(wx - pet.x, wy - pet.y) || 1);
+      p.vx -= nx * f; p.vy -= ny * f;
+    });
+  }
+  // Balanço coerente (o corpo inteiro ondula junto, sem ficar pontudo)
+  function jiggle(amount) {
+    const dir = rand(0, TAU), dx = Math.cos(dir), dy = Math.sin(dir);
+    pet.pts.forEach(p => {
+      const w = .3 + .7 * Math.max(0, Math.cos(p.a - dir));
+      p.vx += dx * amount * w; p.vy += dy * amount * w;
+    });
+  }
+  function hop(dir = 0, power = 1) {
+    if (!pet.grounded || pet.held) return;
+    pet.vy = -620 * power;
+    pet.vx = dir * 220;
+    pet.grounded = false;
+  }
+  function busy() { return pet.held || T.dizzy > 0 || T.eat > 0 || game; }
+
+  /* Ovo */
+  function eggTap(strength = 1) {
+    if (S.born) return;
+    S.taps++;
+    egg.vrot += (Math.random() < .5 ? -1 : 1) * 5 * strength;
+    sfx.boop(); haptic();
+    const ex = W / 2, ey = floorY - pet.r * 1.2;
+    burst('sparkle', ex, ey, 3, { size: 10, max: .6 });
+    if (S.taps >= 6) return hatch();
+    say(['Tem algo aqui dentro…', 'Craque!', 'Tá rachando!', 'Mais um pouquinho…', 'Vai nascer!'][Math.min(S.taps - 1, 4)], 1600);
+    syncUI();
+  }
+  function hatch() {
+    S.born = now(); S.last = now(); S.lastPoop = now();
+    setRadius();
+    const ex = W / 2, ey = floorY - pet.r * 1.1;
+    for (let i = 0; i < 12; i++) {
+      const a = rand(Math.PI * 1.05, Math.PI * 1.95);
+      emit('shell', ex + rand(-20, 20), ey + rand(-30, 20), { vx: Math.cos(a) * rand(120, 320), vy: Math.sin(a) * rand(200, 420), g: 1400, max: 1.6, size: rand(10, 18), vr: rand(-8, 8) });
+    }
+    burst('sparkle', ex, ey, 14, { size: 12, max: 1 });
+    pet.x = ex; pet.y = ey; pet.vy = -500; pet.vx = 0; pet.spawn = 0;
+    T.happy = 2.5; T.surprised = .4;
+    sfx.hatch(); haptic();
+    say('Oi! Eu sou ' + S.name + '! 💖', 3000);
+    syncUI();
+    if (!S.tips) {
+      S.tips = true;
+      const tips = ['Segura em mim pra me pegar no colo', 'Desliza o dedo pra fazer carinho', 'E sacode o celular… se tiver coragem 😏'];
+      tips.forEach((t, i) => setTimeout(() => { if (!game) say(t, 3200); }, 3400 * (i + 1)));
+    }
+    if (sensors.needsPerm && !sensors.on) updateSensorUI();
+  }
+
+  /* Interações com o bichinho */
+  function boop(x, y) {
+    if (S.sleeping) return sleepyPoke();
+    poke(x, y, 260);
+    S.feliz = clamp(S.feliz + 2);
+    T.happy = 1.2;
+    emit('heart', x, y - 10, { color: '#FF5E8A' });
+    sfx.boop(); haptic();
+    if (Math.random() < .35) { sfx.giggle(); say(pick(['Hihi, cócegas!', 'Boop! 💕', 'De novo!', 'Ai que fofo você']), 1600); }
+    syncUI();
+  }
+  function sleepyPoke() {
+    T.peek = 1.6;
+    poke(pet.x, pet.y - pet.r, 120);
+    say(pick(['zzz… mais 5 minutinhos', '…ah, é você 😴', 'Shhh… tô sonhando']), 1800);
+  }
+  function stroke() {
+    if (bath) return scrub();
+    if (S.sleeping) { T.peek = 1; return; }
+    T.bliss = .9;
+    S.feliz = clamp(S.feliz + 1.5);
+    emit('heart', pet.x + rand(-pet.r * .6, pet.r * .6), pet.y - pet.r * .8, { color: pick(['#FF5E8A', '#FF8FB1', '#E0457B']), size: 14 });
+    sfx.purr(); haptic();
+    if (Math.random() < .06) say(pick(['Hmmmm… que delícia', 'Não para 🥰', 'Ronron…']), 1600);
+    syncUI();
+  }
+  function scrub() {
+    S.higiene = clamp(S.higiene + 3);
+    bath.last = performance.now();
+    for (let i = 0; i < 2; i++) emit('bubble', ptr.x + rand(-20, 20), ptr.y + rand(-20, 20), { size: rand(8, 18), vy: rand(-80, -30), max: 1.4 });
+    if (Math.random() < .3) sfx.splash();
+    haptic();
+    T.bliss = .6;
+    if (S.higiene >= 100) endBath(true);
+    syncUI();
+  }
+  function pickUp() {
+    if (S.sleeping) return sleepyPoke();
+    pet.held = true; pet.grounded = false;
+    T.surprised = .3;
+    sfx.whee(); haptic();
+    say(pick(['Uiii, colinho!', 'Me leva pra passear', 'Cuidado, hein!']), 1400);
+  }
+  function release() {
+    pet.held = false;
+    const h = ptr.hist;
+    if (h.length >= 2) {
+      const a = h[0], b = h[h.length - 1], dt = Math.max(16, b.t - a.t) / 1000;
+      pet.vx = clamp((b.x - a.x) / dt, -2600, 2600);
+      pet.vy = clamp((b.y - a.y) / dt, -2600, 2600);
+    }
+    if (Math.hypot(pet.vx, pet.vy) > 900) { sfx.whee(); say('Wheeeee!', 1200); }
+  }
+  function land(speed) {
+    if (speed > 700) {
+      sfx.bump(); haptic();
+      burst('dust', pet.x, floorY, 6, { size: 8, max: .5, min: 40, maxV: 140 });
+    }
+    if (speed > 1900 && T.dizzy <= 0) {
+      T.dizzy = 3; sfx.dizzy();
+      S.feliz = clamp(S.feliz - 4);
+      say('Tô tontinhe… 😵‍💫', 2400);
+      syncUI();
+    } else if (speed > 1100) {
+      T.surprised = .6;
+      say(pick(['Ai!', 'Ui, que pouso!', 'Mais devagar!']), 1300);
+    }
+  }
+
+  /* Ações dos botões */
+  function feed() {
+    if (S.sleeping) return say('Zzz… agora não');
+    if (food) return;
+    if (S.fome >= 95) return say('Tô cheinhe, obrigade!');
+    food = { x: clamp(pet.x + rand(-30, 30), 30, W - 30), y: -30, vy: 0, e: pick(['🍓', '🍙', '🍩', '🥕', '🍉', '🧁']), rest: 0 };
+    say('Hmm, cheiro de comida!', 1400);
+  }
+  function eat() {
+    T.eat = 1.1; T.happy = 1.6;
+    S.fome = clamp(S.fome + 25);
+    S.higiene = clamp(S.higiene - 2);
+    burst('crumb', pet.x, pet.y, 8, { size: 5, max: .7, g: 900, color: '#C98A4B' });
+    [0, 180, 360].forEach(d => setTimeout(() => { sfx.chomp(); haptic(); }, d));
+    say(pick(['Hmmm, que delícia!', 'Nham nham!', 'Amei! 😋']), 1600);
+    food = null;
+    syncUI();
+  }
+  function play() {
+    if (game) return;
+    if (S.sleeping) return say('Zzz… brinca amanhã?');
+    if (S.energia < 15) return say('Tô cansade demais pra brincar');
+    if (bath) endBath(false);
+    game = { left: 8, hits: 0, next: .5 };
+    say('Pega as estrelinhas! ⭐', 1500);
+  }
+  function endGame() {
+    const h = game.hits;
+    game = null; stars = [];
+    S.energia = clamp(S.energia - 10);
+    S.fome = clamp(S.fome - 5);
+    S.feliz = clamp(S.feliz + 5);
+    T.happy = 2;
+    hop(0, 1.1);
+    say(h >= 7 ? 'Arrasou! Você é ícone 💖' : h >= 4 ? 'Que divertido!' : 'Bora de novo?', 2400);
+    syncUI();
+  }
+  function toggleSleep() {
+    if (game) return;
+    if (S.sleeping) {
+      S.sleeping = false;
+      T.grumpy = S.energia < 60 ? 2 : 0;
+      say(S.energia < 60 ? 'Ainda tô com soninho…' : 'Bom dia, flor do dia! ☀️');
+    } else {
+      if (S.energia > 90) return say('Mas eu nem tô com sono!');
+      if (bath) endBath(false);
+      S.sleeping = true;
+      sfx.yawn();
+      say('Boa noite… 🌙', 1800);
+    }
+    syncUI();
+  }
+  function toggleBath() {
+    if (S.sleeping) return say('Zzz… banho depois');
+    if (bath) return endBath(true);
+    if (game) return;
+    bath = { last: performance.now() };
+    say('Esfrega eu com o dedo! 🧽', 2000);
+    syncUI();
+  }
+  function endBath(clean) {
+    if (!bath) return;
+    bath = null;
+    if (clean) {
+      S.feliz = clamp(S.feliz + 6);
+      burst('sparkle', pet.x, pet.y - pet.r * .4, 10, { size: 12 });
+      say(S.higiene >= 95 ? 'Cheirosinhe e diva ✨' : 'Já tá bom, né?', 2000);
+    }
+    syncUI();
+  }
+  function cleanPoop(i) {
+    const x = S.poopX[i] * W;
+    S.poopX.splice(i, 1);
+    S.poops = S.poopX.length;
+    S.higiene = clamp(S.higiene + 4);
+    burst('sparkle', x, floorY - 14, 8, { size: 10, max: .7 });
+    sfx.pop(); haptic();
+    say(pick(['Eca! Valeu 🧻', 'Ops… obrigade!', 'Que vergonha 🙈']), 1600);
+    syncUI();
+  }
+
+  /* "Vigiando": reage quando você volta pro app */
+  function greetReturn(awayMs) {
+    if (!S.born) return say('Toque ou sacuda o ovo pra chocar!', 3000);
     const hr = new Date().getHours();
-    scene.classList.toggle('night', S.sleeping || hr >= 19 || hr < 6);
-    scene.classList.toggle('asleep', S.sleeping);
-    wrap.setAttribute('aria-label', hatched ? 'Fazer carinho em ' + S.name : 'Tocar no ovo');
+    if (S.sleeping) {
+      T.peek = 2.2;
+      return say(pick(['…ah, é você 😴', 'zzz… volta a dormir também', 'Hmm? Já é de manhã?']), 2200);
+    }
+    if (awayMs < 15e3) return;
+    T.surprised = .5; T.happy = 2.5;
+    setTimeout(() => hop(0, 1), 250);
+    sfx.giggle(); haptic();
+    let msg;
+    if (hr >= 0 && hr < 5) msg = 'De madrugada no celular?! 👀';
+    else if (awayMs > 8 * HOUR) msg = 'Que saudade!! Onde você tava?';
+    else if (hr >= 5 && hr < 11) msg = 'Bom dia! Te vi chegando 👀';
+    else msg = needMsg() || pick(['Você voltou! 💖', 'Eu tava de olho na porta 👀', 'Ebaaa, companhia!']);
+    say(msg, 2800);
+  }
 
-    $('#name').textContent = S.name;
-    $('#age').textContent = ageText();
+  /* ---------- Loop de física ---------- */
+  function update(dt) {
+    clockT += dt;
+    for (const k in T) if (k !== 'idle') T[k] = Math.max(0, T[k] - dt);
 
-    const poops = $('#poops');
-    if (poops.childElementCount !== S.poops) {
-      poops.innerHTML = '';
-      ['10%', '78%', '24%'].slice(0, S.poops).forEach(left => {
-        const p = document.createElement('span');
-        p.className = 'poop'; p.textContent = '💩'; p.style.left = left;
-        poops.append(p);
+    // Sacudida
+    shake *= Math.exp(-2.8 * dt);
+    shakeCool = Math.max(0, shakeCool - dt);
+    if (shake > 30) {
+      if (!S.born) {
+        egg.vrot += rand(-1, 1) * shake * .08;
+        if (shake > 70 && shakeCool <= 0) { shakeCool = .45; eggTap(.6); }
+      } else {
+        if (Math.random() < .25) jiggle(shake * 1.6);
+        if (pet.grounded && !pet.held) { pet.vx += rand(-1, 1) * shake * 2; if (shake > 80) pet.vy -= shake * 2.2; pet.grounded = false; }
+        if (S.sleeping && shake > 90) {
+          S.sleeping = false; T.grumpy = 3; T.surprised = .5;
+          say('EI! Eu tava dormindo! 😤', 2400);
+          syncUI();
+        } else if (shake > 260 && T.dizzy <= 0) {
+          T.dizzy = 3.2; sfx.dizzy(); haptic();
+          S.feliz = clamp(S.feliz - 3);
+          say(pick(['Tô tontinhe… 😵‍💫', 'O mundo tá girandooo', 'Para, para, PARA!']), 2400);
+          syncUI();
+        } else if (shake > 70 && T.surprised <= 0 && T.dizzy <= 0) {
+          T.surprised = .5;
+          if (Math.random() < .5) say(pick(['Terremoto?!', 'Uiii!', 'Que balanço!']), 1200);
+        }
+      }
+    }
+
+    // Inclinação: a gravidade acompanha o celular
+    const tilt = sensors.gamma / 60;
+    const G = 1900;
+    const gx = Math.sin(tilt * 1.05) * G * .75;
+
+    // Ovo balança como um pêndulo
+    egg.vrot += (-egg.rot * 60 - egg.vrot * 4 + tilt * 6) * dt;
+    egg.rot += egg.vrot * dt;
+    egg.rot = clamp(egg.rot, -.6, .6);
+
+    if (!S.born) return;
+    if (pet.spawn < 1) pet.spawn = Math.min(1, pet.spawn + dt * 2.2);
+
+    // Centro do corpo
+    const r = pet.r;
+    pet.pvx = pet.vx; pet.pvy = pet.vy;
+    if (pet.held) {
+      const tx = ptr.x, ty = ptr.y + r * .2;
+      pet.vx += ((tx - pet.x) * 140 - pet.vx * 14) * dt;
+      pet.vy += ((ty - pet.y) * 140 - pet.vy * 14) * dt;
+    } else {
+      pet.vx += gx * dt;
+      pet.vy += G * dt;
+    }
+    pet.x += pet.vx * dt;
+    pet.y += pet.vy * dt;
+
+    // Chão (uma mola, pra ele amassar ao cair)
+    const bottom = pet.y + r * .9;
+    const wasGrounded = pet.grounded;
+    if (bottom > floorY && !pet.held) {
+      const pen = bottom - floorY;
+      if (!wasGrounded && pet.vy > 0) land(pet.vy);
+      pet.vy -= pen * 420 * dt;
+      pet.vy *= Math.exp(-9 * dt);
+      pet.vx *= Math.exp(-(Math.abs(gx) > 200 ? 1.2 : 6) * dt);
+      if (pen > r * .5) { pet.y = floorY - r * .4; pet.vy = Math.min(pet.vy, 0); }
+      pet.grounded = true;
+    } else if (bottom < floorY - 4) {
+      pet.grounded = false;
+    }
+    // Paredes e teto
+    if (pet.x - r < 0) { if (pet.vx < -500) { land(-pet.vx * .8); poke(pet.x - r, pet.y, 300); } pet.x = r; pet.vx = Math.abs(pet.vx) * .45; }
+    if (pet.x + r > W) { if (pet.vx > 500) { land(pet.vx * .8); poke(pet.x + r, pet.y, 300); } pet.x = W - r; pet.vx = -Math.abs(pet.vx) * .45; }
+    if (pet.y - r < 0) { pet.y = r; pet.vy = Math.abs(pet.vy) * .3; }
+    if (Math.abs(gx) > 500 && pet.grounded && T.surprised <= 0 && Math.random() < dt * .4) {
+      say(pick(['Ei, segura direito!', 'Tô escorregandooo', 'Ladeira!']), 1400);
+      T.surprised = .5;
+    }
+
+    // Pontos do corpo (gelatina)
+    const ax = (pet.vx - pet.pvx) / dt, ay = (pet.vy - pet.pvy) / dt;
+    const breathe = 1 + Math.sin(clockT * (S.sleeping ? 1.4 : 2.6)) * (S.sleeping ? .03 : .015);
+    pet.pts.forEach(p => {
+      const ca = Math.cos(p.a), sa = Math.sin(p.a);
+      const rx = ca * r * breathe, ry = sa * r * .9 / breathe;
+      const w = sa < 0 ? 1 : .35;
+      p.vx += ((rx - p.ox) * 230 - p.vx * 11 - clamp(ax, -6000, 6000) * .05 * w) * dt;
+      p.vy += ((ry - p.oy) * 230 - p.vy * 11 - clamp(ay, -6000, 6000) * .05 * w) * dt;
+      p.ox += p.vx * dt; p.oy += p.vy * dt;
+      const lim = r * .32;
+      p.ox = clamp(p.ox, rx - lim, rx + lim); p.oy = clamp(p.oy, ry - lim, ry + lim);
+      if (!pet.held && pet.y + p.oy > floorY) {
+        p.oy = floorY - pet.y; p.vy = Math.min(p.vy, 0);
+        p.ox += ca * (pet.y + ry - floorY) * .02;
+      }
+    });
+
+    // Para onde olhar
+    let tx = null, ty = null;
+    if (ptr.down || performance.now() - ptr.active < 1500) { tx = ptr.x; ty = ptr.y; }
+    else if (food) { tx = food.x; ty = food.y; }
+    else if (stars.length) { tx = stars[0].x; ty = stars[0].y; }
+    else if (Math.abs(tilt) > .25) { tx = pet.x + tilt * 200; ty = floorY; }
+    let lx = 0, ly = 0;
+    if (tx != null) {
+      const dx = tx - pet.x, dy = ty - (pet.y - r * .1);
+      const d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / (r * 2.2));
+      lx = dx / d * m; ly = dy / d * m;
+    } else {
+      if (!pet.idleLook || clockT > pet.idleLook.t) pet.idleLook = { x: rand(-.8, .8), y: rand(-.4, .5), t: clockT + rand(1.5, 3.5) };
+      lx = pet.idleLook.x; ly = pet.idleLook.y;
+    }
+    if (T.dizzy > 0 || S.sleeping) { lx = 0; ly = 0; }
+    pet.lookX = lerp(pet.lookX, lx, 1 - Math.exp(-10 * dt));
+    pet.lookY = lerp(pet.lookY, ly, 1 - Math.exp(-10 * dt));
+
+    // Piscar
+    pet.nextBlink -= dt;
+    if (pet.nextBlink <= 0) { pet.blink = .14; pet.nextBlink = rand(2.2, 5.5); }
+    pet.blink = Math.max(0, pet.blink - dt);
+
+    // Comida caindo
+    if (food) {
+      food.vy += 1500 * dt;
+      food.y += food.vy * dt;
+      if (food.y > floorY - 12) { food.y = floorY - 12; food.vy = 0; food.rest += dt; }
+      const mouthY = pet.y + r * .25;
+      if (Math.abs(food.x - pet.x) < r * .8 && food.y > pet.y - r * 1.1 && food.y < mouthY + r * .6) eat();
+      else if (food.rest > .3 && pet.grounded && !busy() && Math.random() < dt * 3) hop(Math.sign(food.x - pet.x), .8);
+    }
+
+    // Minijogo
+    if (game) {
+      game.next -= dt;
+      stars.forEach(s => s.t += dt);
+      const before = stars.length;
+      stars = stars.filter(s => s.t < 1.5);
+      if (stars.length < before) sfx.sad();
+      if (game.next <= 0 && !stars.length) {
+        if (game.left <= 0) endGame();
+        else {
+          game.left--;
+          stars.push({ x: rand(40, W - 40), y: rand(H * .15, floorY - r * 2.2), t: 0 });
+          game.next = .25;
+        }
+      }
+    }
+
+    // Banho termina sozinho se ninguém esfregar
+    if (bath && performance.now() - bath.last > 7000) endBath(S.higiene > 70);
+
+    // Vida própria quando ninguém está mexendo
+    T.idle -= dt;
+    if (T.idle <= 0) {
+      T.idle = rand(6, 12);
+      if (!busy() && !S.sleeping && !bath && !ptr.down && pet.grounded) {
+        const m = mood();
+        if (S.energia < 35 && Math.random() < .5) { T.yawn = 1.4; sfx.yawn(); say('Aaaahhh… 🥱', 1500); }
+        else if (m === 'happy' && Math.random() < .4) { [0, 380, 760].forEach(d => setTimeout(() => hop(0, .6), d)); T.happy = 1.5; }
+        else if (Math.random() < .7) hop(Math.sign(rand(W * .2, W * .8) - pet.x) || 1, .55);
+        else say(needMsg() || pick(['Tô de olho em tudo 👀', 'La la la ♪', 'Hmm…']), 1800);
+      }
+    }
+    if (S.sleeping && Math.random() < dt * .8) emit('z', pet.x + r * .5, pet.y - r * .7, { vx: rand(10, 30), vy: -40, max: 2, size: rand(14, 22) });
+
+    // Partículas
+    particles.forEach(p => {
+      p.life += dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      if (p.type === 'heart' || p.type === 'bubble' || p.type === 'z') { p.vx *= .98; }
+      if (p.type === 'shell' && p.y > floorY) { p.y = floorY; p.vy *= -.3; p.vx *= .6; }
+    });
+    particles = particles.filter(p => p.life < p.max);
+  }
+
+  /* ---------- Desenho ---------- */
+  function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function mix(a, b, t) {
+    const A = hexRgb(a), B = hexRgb(b);
+    return '#' + A.map((v, i) => Math.round(lerp(v, B[i], t)).toString(16).padStart(2, '0')).join('');
+  }
+  const SKY = [[0, '#0E1433', '#2A2F63'], [5, '#141A40', '#3A3F72'], [6.5, '#F59E9A', '#FFD9A8'], [8, '#6FBDEB', '#CDEBFA'], [16.5, '#6BB3E6', '#D2ECF8'], [18.5, '#7A5EA8', '#F7A27E'], [20, '#1B2150', '#3B3A72'], [24, '#0E1433', '#2A2F63']];
+  function skyAt(h) {
+    for (let i = 0; i < SKY.length - 1; i++) {
+      const a = SKY[i], b = SKY[i + 1];
+      if (h >= a[0] && h <= b[0]) { const t = (h - a[0]) / (b[0] - a[0]); return [mix(a[1], b[1], t), mix(a[2], b[2], t)]; }
+    }
+    return [SKY[0][1], SKY[0][2]];
+  }
+  function daylight(h) {
+    const up = clamp((h - 5.5) / 2, 0, 1), down = clamp((20 - h) / 2, 0, 1);
+    return Math.min(up, down);
+  }
+
+  function drawBackground() {
+    const d = new Date(), h = d.getHours() + d.getMinutes() / 60;
+    const day = daylight(h);
+    const [top, bot] = skyAt(h);
+    let g = ctx.createLinearGradient(0, 0, 0, floorY);
+    g.addColorStop(0, top); g.addColorStop(1, bot);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const par = sensors.gamma / 60;
+
+    // Estrelas
+    if (day < 1) {
+      skyStars.forEach(s => {
+        ctx.globalAlpha = (1 - day) * (.5 + .5 * Math.sin(clockT * 2 + s.p));
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath(); ctx.arc(s.x * W - par * 6, s.y * floorY, s.s, 0, TAU); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+    // Sol ou lua
+    if (h >= 6 && h < 19.5) {
+      const p = (h - 6) / 13.5;
+      const sx = W * (.1 + .8 * p) - par * 10, sy = floorY * .75 - Math.sin(Math.PI * p) * floorY * .55;
+      ctx.fillStyle = 'rgba(255,214,92,.25)';
+      ctx.beginPath(); ctx.arc(sx, sy, 34 + Math.sin(clockT * 1.5) * 3, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#FFD45C';
+      ctx.beginPath(); ctx.arc(sx, sy, 24, 0, TAU); ctx.fill();
+    } else {
+      const mx = W * .8 - par * 10, my = floorY * .2;
+      ctx.fillStyle = 'rgba(244,240,220,.15)';
+      ctx.beginPath(); ctx.arc(mx, my, 32, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#F4F0DC';
+      ctx.beginPath(); ctx.arc(mx, my, 20, 0, TAU); ctx.fill();
+      ctx.fillStyle = top;
+      ctx.beginPath(); ctx.arc(mx + 9, my - 5, 17, 0, TAU); ctx.fill();
+    }
+    // Nuvens
+    clouds.forEach(c => {
+      c.x += c.v * (1 / 60) * .3;
+      if (c.x > 1.3) c.x = -.3;
+      const cx = c.x * W - par * 25 * c.d, cy = c.y * floorY, s = c.s * Math.min(W, 420) / 12;
+      ctx.fillStyle = `rgba(255,255,255,${.25 + .6 * day})`;
+      ctx.beginPath();
+      ctx.arc(cx, cy, s, 0, TAU); ctx.arc(cx + s * 1.1, cy - s * .4, s * 1.2, 0, TAU);
+      ctx.arc(cx + s * 2.2, cy, s * .9, 0, TAU); ctx.rect(cx, cy, s * 2.2, s * .9);
+      ctx.fill();
+    });
+    // Morros
+    [[.62, 18, .006, '#B4DFA0', '#2E4A55', 40], [.72, 12, .011, '#93CF7E', '#25404A', 70]].forEach(([base, amp, f, cd, cn, depth], i) => {
+      ctx.fillStyle = mix(cn, cd, day);
+      ctx.beginPath(); ctx.moveTo(0, floorY);
+      for (let x = 0; x <= W + 10; x += 10) ctx.lineTo(x, floorY * base + Math.sin((x + par * depth) * f + i * 2) * amp);
+      ctx.lineTo(W, floorY); ctx.closePath(); ctx.fill();
+    });
+    // Chão
+    g = ctx.createLinearGradient(0, floorY - 8, 0, H);
+    g.addColorStop(0, mix('#3E5F4A', '#86C96B', day)); g.addColorStop(1, mix('#2B4436', '#5FA850', day));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(0, floorY - 6);
+    for (let x = 0; x <= W; x += 14) ctx.quadraticCurveTo(x + 7, floorY - 12, x + 14, floorY - 6);
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+    flowers.forEach(fl => {
+      const fx = fl.x * W, fy = floorY + fl.y * (H - floorY);
+      ctx.fillStyle = fl.c; ctx.globalAlpha = .5 + .5 * day;
+      for (let k = 0; k < 5; k++) { const a = k / 5 * TAU; ctx.beginPath(); ctx.arc(fx + Math.cos(a) * 3, fy + Math.sin(a) * 3, 2.4, 0, TAU); ctx.fill(); }
+      ctx.fillStyle = '#FFD23F'; ctx.beginPath(); ctx.arc(fx, fy, 1.8, 0, TAU); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawPoops() {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    S.poopX.forEach((px, i) => {
+      const x = px * W, y = floorY - 12;
+      ctx.font = '28px system-ui, "Apple Color Emoji", sans-serif';
+      ctx.fillText('💩', x, y);
+      ctx.strokeStyle = 'rgba(120,140,60,.55)'; ctx.lineWidth = 2;
+      for (let k = -1; k <= 1; k++) {
+        ctx.beginPath();
+        for (let s = 0; s < 14; s++) {
+          const yy = y - 18 - s * 1.6, xx = x + k * 8 + Math.sin(s * .6 + clockT * 4 + i) * 2.5;
+          s ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+        }
+        ctx.stroke();
+      }
+    });
+  }
+
+  function eggPath(w, hh) {
+    const cy = -hh * .42;
+    const p = new Path2D();
+    p.ellipse(0, cy, w / 2, hh * .58, 0, Math.PI, TAU);
+    p.ellipse(0, cy, w / 2, hh * .42, 0, 0, Math.PI);
+    p.closePath();
+    return p;
+  }
+  const CRACKS = [[[-.5, -.5], [-.3, -.58], [-.15, -.46]], [[-.15, -.46], [0, -.6], [.12, -.47]], [[.12, -.47], [.3, -.6], [.5, -.5]], [[-.1, -.75], [.05, -.68], [.02, -.6]], [[.2, -.3], [.3, -.38], [.42, -.3]]];
+  function drawEgg() {
+    const w = pet.r * 1.9, hh = pet.r * 2.4;
+    ctx.save();
+    ctx.translate(W / 2, floorY);
+    // sombra
+    ctx.fillStyle = 'rgba(0,0,0,.16)';
+    ctx.beginPath(); ctx.ellipse(0, 2, w * .45, 7, 0, 0, TAU); ctx.fill();
+    ctx.rotate(egg.rot);
+    const path = eggPath(w, hh);
+    const g = ctx.createRadialGradient(-w * .2, -hh * .7, w * .05, 0, -hh * .45, hh * .7);
+    g.addColorStop(0, '#FFFFFF'); g.addColorStop(.5, '#FFF4DE'); g.addColorStop(1, '#E9CFA6');
+    ctx.fillStyle = g; ctx.fill(path);
+    ctx.save(); ctx.clip(path);
+    ctx.fillStyle = 'rgba(224,69,123,.5)';
+    [[-.2, -.7, .13], [.25, -.45, .16], [-.15, -.2, .1], [.05, -.88, .08]].forEach(([x, y, s]) => { ctx.beginPath(); ctx.ellipse(x * w, y * hh, s * w, s * w * .8, .3, 0, TAU); ctx.fill(); });
+    ctx.restore();
+    ctx.lineWidth = 4; ctx.strokeStyle = '#2A2140'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.stroke(path);
+    const lv = Math.min(S.taps, 5);
+    for (let i = 0; i < lv; i++) {
+      ctx.beginPath();
+      CRACKS[i].forEach(([x, y], k) => k ? ctx.lineTo(x * w, y * hh) : ctx.moveTo(x * w, y * hh));
+      ctx.lineWidth = 3.5; ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function bodyPath() {
+    const p = new Path2D(), pts = pet.pts;
+    const P = i => pts[(i + N) % N];
+    const wx = i => pet.x + P(i).ox, wy = i => pet.y + P(i).oy;
+    p.moveTo((wx(0) + wx(1)) / 2, (wy(0) + wy(1)) / 2);
+    for (let i = 1; i <= N; i++) p.quadraticCurveTo(wx(i), wy(i), (wx(i) + wx(i + 1)) / 2, (wy(i) + wy(i + 1)) / 2);
+    p.closePath();
+    return p;
+  }
+  function ptAt(angle) {
+    const i = Math.round(((angle % TAU + TAU) % TAU) / TAU * N) % N;
+    return { x: pet.x + pet.pts[i].ox, y: pet.y + pet.pts[i].oy };
+  }
+
+  function expression() {
+    if (T.dizzy > 0) return 'dizzy';
+    if (T.surprised > 0) return 'surprised';
+    if (T.eat > 0) return 'eat';
+    if (S.sleeping) return T.peek > 0 ? 'peek' : 'sleep';
+    if (T.yawn > 0) return 'yawn';
+    if (T.grumpy > 0) return 'grumpy';
+    if (T.bliss > 0) return 'bliss';
+    if (food && Math.hypot(food.x - pet.x, food.y - pet.y) < pet.r * 3) return 'eager';
+    if (T.happy > 0 || pet.held) return 'happy';
+    return mood();
+  }
+
+  function drawPet() {
+    const r = pet.r, col = S.color;
+    const sc = pet.spawn < 1 ? (1 - Math.pow(1 - pet.spawn, 3)) * (1 + .3 * Math.sin(pet.spawn * Math.PI)) : 1;
+    // sombra no chão
+    const hgt = clamp((floorY - (pet.y + r * .9)) / 300, 0, 1);
+    ctx.fillStyle = `rgba(0,0,0,${.18 * (1 - hgt * .7)})`;
+    ctx.beginPath(); ctx.ellipse(pet.x, floorY + 2, r * .85 * (1 - hgt * .4), 8 * (1 - hgt * .4), 0, 0, TAU); ctx.fill();
+
+    ctx.save();
+    if (sc !== 1) { ctx.translate(pet.x, pet.y + r); ctx.scale(sc, sc); ctx.translate(-pet.x, -pet.y - r); }
+    const outline = mix(col, '#2A2140', .7);
+    const dark = mix(col, '#2A2140', .25), light = mix(col, '#FFFFFF', .45);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+    // bandeirinha atrás do corpo
+    if (S.acc === 'flag') {
+      const hand = ptAt(.25);
+      const sway = Math.sin(clockT * 3) * 3 + pet.vx * -.01;
+      ctx.strokeStyle = outline; ctx.lineWidth = r * .05;
+      ctx.beginPath(); ctx.moveTo(hand.x + r * .08, hand.y); ctx.lineTo(hand.x + r * .2, hand.y - r * 1.15); ctx.stroke();
+      const fx = hand.x + r * .2, fy = hand.y - r * 1.15, fw = r * .55, sh = r * .065;
+      PRIDE.forEach((c, i) => {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.moveTo(fx, fy + i * sh);
+        ctx.quadraticCurveTo(fx + fw / 2, fy + i * sh + sway, fx + fw, fy + i * sh);
+        ctx.lineTo(fx + fw, fy + (i + 1) * sh + .5);
+        ctx.quadraticCurveTo(fx + fw / 2, fy + (i + 1) * sh + sway + .5, fx, fy + (i + 1) * sh + .5);
+        ctx.fill();
       });
     }
 
+    // orelhinhas
+    [-2.1, -1.04].forEach(a => {
+      const e = ptAt(a), ex = e.x + Math.cos(a) * r * .02, ey = e.y + r * .05;
+      ctx.fillStyle = dark; ctx.strokeStyle = outline; ctx.lineWidth = r * .045;
+      ctx.beginPath(); ctx.arc(ex, ey, r * .24, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = mix(col, '#FF5E8A', .45);
+      ctx.beginPath(); ctx.arc(ex, ey + r * .02, r * .12, 0, TAU); ctx.fill();
+    });
+    // pezinhos
+    const footY = pet.held ? pet.y + r * .95 : Math.min(pet.y + r * .92, floorY - r * .04);
+    [-1, 1].forEach(s => {
+      const kick = pet.held ? Math.sin(clockT * 14 + s) * r * .08 : 0;
+      ctx.fillStyle = dark; ctx.strokeStyle = outline; ctx.lineWidth = r * .045;
+      ctx.beginPath(); ctx.ellipse(pet.x + s * r * .45, footY + kick, r * .24, r * .13, 0, 0, TAU); ctx.fill(); ctx.stroke();
+    });
+
+    // corpo
+    const body = bodyPath();
+    const g = ctx.createRadialGradient(pet.x - r * .35, pet.y - r * .45, r * .1, pet.x, pet.y, r * 1.15);
+    g.addColorStop(0, light); g.addColorStop(.55, col); g.addColorStop(1, dark);
+    ctx.fillStyle = g; ctx.fill(body);
+    ctx.save(); ctx.clip(body);
+    // barriga
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.beginPath(); ctx.ellipse(pet.x, pet.y + r * .42, r * .55, r * .4, 0, 0, TAU); ctx.fill();
+    // sujeira
+    const dirt = clamp((45 - S.higiene) / 45, 0, 1);
+    if (dirt > 0) {
+      ctx.fillStyle = `rgba(110,78,45,${.45 * dirt})`;
+      [[-.45, -.2, .14], [.4, .1, .12], [.1, .5, .1], [-.2, .35, .08], [.5, -.4, .07]].forEach(([x, y, s]) => { ctx.beginPath(); ctx.ellipse(pet.x + x * r, pet.y + y * r, s * r, s * r * .75, 0, 0, TAU); ctx.fill(); });
+    }
+    // brilho
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.beginPath(); ctx.ellipse(pet.x - r * .42, pet.y - r * .5, r * .18, r * .1, -.6, 0, TAU); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = outline; ctx.lineWidth = r * .05; ctx.stroke(body);
+
+    drawFace(r, outline);
+    drawAccessory(r, outline);
+    ctx.restore();
+  }
+
+  function drawFace(r, outline) {
+    const ex = expression();
+    const fx = pet.x + pet.lookX * r * .14, fy = pet.y - r * .08 + pet.lookY * r * .08;
+    const eyeDX = r * .33, eyeY = fy - r * .02;
+    const erx = r * .12, ery = r * .15;
+    const ink = '#2A2140';
+    ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = r * .06;
+
+    // bochechas
+    ctx.fillStyle = `rgba(255,80,130,${ex === 'bliss' || ex === 'happy' ? .45 : .28})`;
+    [-1, 1].forEach(s => { ctx.beginPath(); ctx.ellipse(fx + s * r * .55, fy + r * .2, r * .13, r * .08, 0, 0, TAU); ctx.fill(); });
+    ctx.fillStyle = ink;
+
+    const openEye = (x, scaleY = 1, big = 1) => {
+      const b = pet.blink > 0 ? .12 : scaleY;
+      ctx.beginPath(); ctx.ellipse(x, eyeY, erx * big, ery * big * b, 0, 0, TAU); ctx.fill();
+      if (b > .3) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath(); ctx.arc(x + erx * .35 + pet.lookX * erx * .2, eyeY - ery * .4 * b, erx * .38 * big, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.arc(x - erx * .3, eyeY + ery * .35 * b, erx * .16 * big, 0, TAU); ctx.fill();
+        ctx.fillStyle = ink;
+      }
+    };
+    const arcEye = (x, up) => {
+      ctx.beginPath();
+      if (up) ctx.arc(x, eyeY + ery * .5, erx * 1.1, Math.PI * 1.15, Math.PI * 1.85);
+      else ctx.arc(x, eyeY - ery * .4, erx * 1.1, Math.PI * .15, Math.PI * .85);
+      ctx.stroke();
+    };
+
+    [-1, 1].forEach(s => {
+      const x = fx + s * eyeDX;
+      switch (ex) {
+        case 'happy': case 'eat': arcEye(x, true); break;
+        case 'sleep': case 'bliss': arcEye(x, false); break;
+        case 'peek': s < 0 ? arcEye(x, false) : openEye(x, .55); break;
+        case 'yawn': arcEye(x, false); break;
+        case 'surprised': openEye(x, 1, 1.25); break;
+        case 'dizzy': {
+          ctx.save(); ctx.lineWidth = r * .04; ctx.beginPath();
+          for (let k = 0; k < 28; k++) {
+            const a = k * .45 + clockT * 8 * s, rr = k / 28 * erx * 1.2;
+            k ? ctx.lineTo(x + Math.cos(a) * rr, eyeY + Math.sin(a) * rr) : ctx.moveTo(x, eyeY);
+          }
+          ctx.stroke(); ctx.restore(); break;
+        }
+        case 'grumpy': {
+          openEye(x, .9);
+          ctx.fillStyle = mix(S.color, '#2A2140', .1);
+          ctx.fillRect(x - erx * 1.4, eyeY - ery * 1.3, erx * 2.8, ery * 1.15);
+          ctx.fillStyle = ink;
+          ctx.beginPath(); ctx.moveTo(x - erx * 1.2, eyeY - ery * .15); ctx.lineTo(x + erx * 1.2, eyeY - ery * .15); ctx.stroke();
+          break;
+        }
+        case 'sad': {
+          openEye(x, .95);
+          ctx.beginPath(); ctx.moveTo(x - s * erx * 1.3, eyeY - ery * 1.7); ctx.lineTo(x + s * erx * .9, eyeY - ery * 1.25); ctx.stroke();
+          break;
+        }
+        default: openEye(x);
+      }
+    });
+    if (ex === 'sad' && S.fome < 15) {
+      ctx.fillStyle = '#7CC8FF';
+      const ty = eyeY + ery + ((clockT * 40) % (r * .5));
+      ctx.beginPath(); ctx.ellipse(fx - eyeDX - erx * .4, ty, r * .04, r * .06, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = ink;
+    }
+
+    // boca
+    const my = fy + r * .26;
+    ctx.lineWidth = r * .055;
+    const openMouth = (w, h) => {
+      ctx.fillStyle = '#5A1E35';
+      ctx.beginPath(); ctx.ellipse(fx, my, w, h, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#FF7A9C';
+      ctx.beginPath(); ctx.ellipse(fx, my + h * .45, w * .65, h * .45, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = ink;
+    };
+    switch (ex) {
+      case 'happy': case 'bliss': {
+        ctx.fillStyle = '#5A1E35';
+        ctx.beginPath(); ctx.moveTo(fx - r * .17, my - r * .04); ctx.quadraticCurveTo(fx, my + r * .28, fx + r * .17, my - r * .04); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#FF7A9C';
+        ctx.beginPath(); ctx.ellipse(fx, my + r * .09, r * .08, r * .045, 0, 0, TAU); ctx.fill();
+        break;
+      }
+      case 'eat': openMouth(r * .13, r * .13 * Math.abs(Math.sin(clockT * 18))); break;
+      case 'eager': openMouth(r * .12, r * .1); break;
+      case 'surprised': openMouth(r * .08, r * .1); break;
+      case 'yawn': openMouth(r * .1, r * .16); break;
+      case 'sleep': case 'peek': ctx.beginPath(); ctx.ellipse(fx, my, r * .045, r * .035 * (1 + .3 * Math.sin(clockT * 1.4)), 0, 0, TAU); ctx.fill(); break;
+      case 'sad': ctx.beginPath(); ctx.arc(fx, my + r * .12, r * .12, Math.PI * 1.2, Math.PI * 1.8); ctx.stroke(); break;
+      case 'grumpy': ctx.beginPath(); ctx.moveTo(fx - r * .1, my + r * .02); ctx.lineTo(fx + r * .1, my); ctx.stroke(); break;
+      case 'dizzy': {
+        ctx.beginPath();
+        for (let k = 0; k <= 12; k++) { const x = fx - r * .14 + k * r * .028, y = my + Math.sin(k * 1.2 + clockT * 6) * r * .025; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.stroke(); break;
+      }
+      default: {
+        // boquinha "ω"
+        ctx.beginPath();
+        ctx.arc(fx - r * .06, my - r * .02, r * .06, Math.PI * .1, Math.PI * .9);
+        ctx.moveTo(fx + r * .12, my - r * .02 + Math.sin(Math.PI * .1) * r * .06);
+        ctx.arc(fx + r * .06, my - r * .02, r * .06, Math.PI * .1, Math.PI * .9);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawAccessory(r, outline) {
+    const top = ptAt(-Math.PI / 2);
+    const fx = pet.x + pet.lookX * r * .14, fy = pet.y - r * .1 + pet.lookY * r * .08;
+    ctx.lineWidth = r * .045; ctx.strokeStyle = '#2A2140';
+    if (S.acc === 'bow') {
+      const bx = top.x + r * .05, by = top.y + r * .08;
+      ctx.fillStyle = '#E0457B';
+      [-1, 1].forEach(s => { ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + s * r * .32, by - r * .2); ctx.quadraticCurveTo(bx + s * r * .4, by, bx + s * r * .32, by + r * .2); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+      ctx.fillStyle = '#B82E5E';
+      ctx.beginPath(); ctx.arc(bx, by, r * .09, 0, TAU); ctx.fill(); ctx.stroke();
+    } else if (S.acc === 'crown') {
+      const cx = top.x, cy = top.y + r * .06, w = r * .55, h = r * .38;
+      const g = ctx.createLinearGradient(0, cy - h, 0, cy);
+      g.addColorStop(0, '#FFE680'); g.addColorStop(1, '#E8A91C');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(cx - w / 2, cy); ctx.lineTo(cx - w / 2, cy - h * .6); ctx.lineTo(cx - w / 4, cy - h * .3);
+      ctx.lineTo(cx, cy - h); ctx.lineTo(cx + w / 4, cy - h * .3); ctx.lineTo(cx + w / 2, cy - h * .6); ctx.lineTo(cx + w / 2, cy);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#E0457B';
+      ctx.beginPath(); ctx.arc(cx, cy - h * .3, r * .05, 0, TAU); ctx.fill();
+    } else if (S.acc === 'glasses') {
+      const ey = fy, dx = r * .33, rr = r * .2;
+      ctx.fillStyle = 'rgba(160,220,255,.25)'; ctx.lineWidth = r * .05;
+      [-1, 1].forEach(s => { ctx.beginPath(); ctx.arc(fx + s * dx, ey, rr, 0, TAU); ctx.fill(); ctx.stroke(); });
+      ctx.beginPath(); ctx.moveTo(fx - dx + rr, ey); ctx.quadraticCurveTo(fx, ey - r * .08, fx + dx - rr, ey); ctx.stroke();
+    }
+  }
+
+  function drawFood() {
+    if (!food) return;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `${Math.round(pet.r * .5)}px system-ui, "Apple Color Emoji", sans-serif`;
+    ctx.fillText(food.e, food.x, food.y);
+  }
+  function starPath(x, y, R, rr) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? rr : R;
+      ctx.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d);
+    }
+    ctx.closePath();
+  }
+  function drawStars() {
+    stars.forEach(s => {
+      const pop = Math.min(1, s.t * 6), fade = s.t > 1.1 ? 1 - (s.t - 1.1) / .4 : 1;
+      const R = 26 * pop * (1 + .08 * Math.sin(s.t * 12));
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = 'rgba(255,230,120,.35)';
+      ctx.beginPath(); ctx.arc(s.x, s.y, R * 1.5, 0, TAU); ctx.fill();
+      starPath(s.x, s.y, R, R * .45);
+      ctx.fillStyle = '#FFD23F'; ctx.fill();
+      ctx.strokeStyle = '#C98A00'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+  }
+  function drawParticles() {
+    particles.forEach(p => {
+      const t = p.life / p.max, a = 1 - t * t;
+      ctx.globalAlpha = Math.max(0, a);
+      ctx.save(); ctx.translate(p.x, p.y);
+      switch (p.type) {
+        case 'heart': {
+          const s = p.size * (.8 + t * .6);
+          ctx.fillStyle = p.color || '#FF5E8A';
+          ctx.beginPath();
+          ctx.moveTo(0, s * .35);
+          ctx.bezierCurveTo(-s * .6, -s * .15, -s * .25, -s * .6, 0, -s * .25);
+          ctx.bezierCurveTo(s * .25, -s * .6, s * .6, -s * .15, 0, s * .35);
+          ctx.fill(); break;
+        }
+        case 'bubble': {
+          const s = p.size * (1 + t * .4);
+          ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+          ctx.fillStyle = 'rgba(180,225,255,.35)';
+          ctx.beginPath(); ctx.arc(0, 0, s, 0, TAU); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = 'rgba(255,255,255,.9)';
+          ctx.beginPath(); ctx.arc(-s * .35, -s * .35, s * .22, 0, TAU); ctx.fill(); break;
+        }
+        case 'sparkle': {
+          ctx.rotate(p.rot);
+          ctx.fillStyle = '#FFF3A8';
+          starPath(0, 0, p.size, p.size * .3); ctx.fill(); break;
+        }
+        case 'shell': {
+          ctx.rotate(p.rot);
+          ctx.fillStyle = '#FFF4DE'; ctx.strokeStyle = '#2A2140'; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.moveTo(-p.size, p.size * .4); ctx.lineTo(0, -p.size * .7); ctx.lineTo(p.size * .8, p.size * .5); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
+        }
+        case 'crumb': case 'dust': {
+          ctx.fillStyle = p.type === 'dust' ? 'rgba(255,255,255,.7)' : p.color;
+          ctx.beginPath(); ctx.arc(0, 0, p.size * (p.type === 'dust' ? 1 + t : 1), 0, TAU); ctx.fill(); break;
+        }
+        case 'z': case 'text': {
+          ctx.fillStyle = p.type === 'z' ? '#FFFFFF' : '#FFD23F';
+          ctx.strokeStyle = 'rgba(42,33,64,.5)'; ctx.lineWidth = 3;
+          ctx.font = `800 ${p.size}px "Baloo 2", system-ui, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.strokeText(p.txt || 'z', 0, 0); ctx.fillText(p.txt || 'z', 0, 0); break;
+        }
+      }
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
+  }
+  function drawSponge() {
+    if (!bath || !ptr.down) return;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '40px system-ui, "Apple Color Emoji", sans-serif';
+    ctx.fillText('🧽', ptr.x + 18, ptr.y - 26);
+  }
+
+  function draw() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    drawBackground();
+    drawPoops();
+    if (S.born) drawPet(); else drawEgg();
+    drawFood();
+    drawStars();
+    drawParticles();
+    if (S.sleeping) { ctx.fillStyle = 'rgba(8,10,40,.35)'; ctx.fillRect(0, 0, W, H); }
+    drawSponge();
+
+    // balão de fala acompanha o bichinho
+    if (performance.now() > sayUntil) bubble.classList.add('off');
+    if (!bubble.classList.contains('off')) {
+      const bw = bubble.offsetWidth, bh = bubble.offsetHeight;
+      const topY = S.born ? pet.y - pet.r * 1.15 : floorY - pet.r * 2.6;
+      const x = clamp(S.born ? pet.x : W / 2, bw / 2 + 8, W - bw / 2 - 8);
+      const y = clamp(topY - 12, bh + 8, H);
+      bubble.style.left = x + 'px'; bubble.style.top = y + 'px';
+    }
+  }
+
+  let lastT = performance.now(), running = true;
+  function frame(t) {
+    if (!running) return;
+    let dt = Math.min((t - lastT) / 1000, 1 / 20);
+    lastT = t;
+    const steps = 2;
+    for (let i = 0; i < steps; i++) update(dt / steps);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Toques e gestos ---------- */
+  function pos(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  function onPet(p) {
+    if (!S.born) {
+      const ex = W / 2, ey = floorY - pet.r * 1.1;
+      return Math.hypot((p.x - ex) / 1.0, (p.y - ey) / 1.3) < pet.r * 1.1;
+    }
+    return Math.hypot(p.x - pet.x, p.y - pet.y) < pet.r * 1.15;
+  }
+  let longTimer = 0;
+  cv.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    audio();
+    if (sensors.needsPerm && !sensors.on && !sensors.asked && S.born) enableSensors();
+    const p = pos(e);
+    Object.assign(ptr, { down: true, x: p.x, y: p.y, sx: p.x, sy: p.y, t0: performance.now(), moved: 0, stroke: 0, hist: [{ x: p.x, y: p.y, t: performance.now() }], lastVX: 0 });
+    ptr.active = performance.now();
+    // estrelas do minijogo
+    const si = stars.findIndex(s => Math.hypot(s.x - p.x, s.y - p.y) < 40);
+    if (si >= 0) {
+      const s = stars.splice(si, 1)[0];
+      game.hits++; S.feliz = clamp(S.feliz + 4);
+      burst('sparkle', s.x, s.y, 8, { size: 10, max: .6 });
+      emit('text', s.x, s.y - 20, { txt: '+1', size: 24, vx: 0, vy: -80, max: .8, vr: 0 });
+      sfx.pop(); haptic(); T.happy = .8;
+      hop(Math.sign(s.x - pet.x) * .5, .6);
+      ptr.down = false;
+      syncUI();
+      return;
+    }
+    const pi = S.poopX.findIndex(x => Math.hypot(x * W - p.x, floorY - 14 - p.y) < 28);
+    if (pi >= 0) { cleanPoop(pi); ptr.down = false; return; }
+    ptr.onPet = onPet(p);
+    clearTimeout(longTimer);
+    if (ptr.onPet && S.born && !bath) {
+      longTimer = setTimeout(() => { if (ptr.down && ptr.moved < 14 && !pet.held) pickUp(); }, 260);
+    }
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = pos(e);
+    ptr.active = performance.now();
+    if (!ptr.down) { ptr.x = p.x; ptr.y = p.y; return; }
+    const d = Math.hypot(p.x - ptr.x, p.y - ptr.y);
+    const t = performance.now();
+    const prev = ptr.hist[ptr.hist.length - 1];
+    const vx = (p.x - prev.x) / Math.max(1, t - prev.t) * 1000;
+    // chacoalhar com o dedo (quando segurando)
+    if (pet.held && Math.abs(vx) > 700 && Math.sign(vx) !== Math.sign(ptr.lastVX)) addShake(38);
+    if (Math.abs(vx) > 100) ptr.lastVX = vx;
+    ptr.x = p.x; ptr.y = p.y; ptr.moved += d;
+    ptr.hist.push({ x: p.x, y: p.y, t });
+    while (ptr.hist.length > 2 && t - ptr.hist[0].t > 90) ptr.hist.shift();
+    if (!pet.held && S.born && onPet(p)) {
+      ptr.stroke += d;
+      if (ptr.stroke > (bath ? 30 : 55)) { ptr.stroke = 0; stroke(); }
+    }
+  });
+  function endPointer(e) {
+    if (!ptr.down) return;
+    ptr.down = false;
+    clearTimeout(longTimer);
+    const dt = performance.now() - ptr.t0;
+    if (pet.held) { release(); return; }
+    if (ptr.moved < 14 && dt < 350) {
+      if (!S.born) { if (ptr.onPet) eggTap(); return; }
+      const t = performance.now();
+      if (t - ptr.lastTap < 320 && !S.sleeping && !bath) {
+        ptr.lastTap = 0;
+        hop(0, 1.25); T.happy = 1.2; sfx.whee(); haptic();
+        emit('text', pet.x, pet.y - pet.r * 1.2, { txt: 'hop!', size: 22, vx: 0, vy: -60, max: .8, vr: 0 });
+        return;
+      }
+      ptr.lastTap = t;
+      if (ptr.onPet && !bath) boop(ptr.x, ptr.y);
+      else if (!ptr.onPet && !S.sleeping) { emit('sparkle', ptr.x, ptr.y, { size: 8, max: .5, vy: -20 }); }
+    }
+  }
+  cv.addEventListener('pointerup', endPointer);
+  cv.addEventListener('pointercancel', endPointer);
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+
+  /* ---------- Interface ---------- */
+  function syncUI() {
+    tick();
+    $('#name').textContent = S.name;
+    $('#age').textContent = ageText();
     document.querySelectorAll('.stat').forEach(el => {
       const v = Math.round(S[el.dataset.key]);
       el.dataset.level = v < 25 ? 'crit' : v < 50 ? 'warn' : 'good';
@@ -490,142 +1511,22 @@ body {
       el.querySelector('.fill').style.width = v + '%';
       el.querySelector('.track').setAttribute('aria-valuenow', v);
     });
-    document.querySelectorAll('.act').forEach(b => { b.disabled = !hatched; });
+    document.querySelectorAll('.act').forEach(b => { b.disabled = !S.born; });
     $('#sleepLabel').textContent = S.sleeping ? 'Acordar' : 'Dormir';
+    $('#bathLabel').textContent = bath ? 'Pronto' : 'Banho';
+    $('#bath').setAttribute('aria-pressed', !!bath);
+    if (S.born) setRadius();
+    S.lastSeen = now();
     save();
   }
 
-  let sayTimer;
-  function say(text, ms = 2600) {
-    if (!text) return;
-    const b = $('#bubble');
-    b.textContent = text;
-    b.classList.remove('off');
-    clearTimeout(sayTimer);
-    sayTimer = setTimeout(() => b.classList.add('off'), ms);
-  }
-  function anim(cls) {
-    wrap.classList.remove('jump', 'wiggle', 'chomp');
-    void wrap.offsetWidth;
-    wrap.classList.add(cls);
-  }
-  wrap.addEventListener('animationend', () => wrap.classList.remove('jump', 'wiggle', 'chomp'));
+  $('#feed').addEventListener('click', () => { audio(); feed(); });
+  $('#play').addEventListener('click', () => { audio(); play(); });
+  $('#sleep').addEventListener('click', () => { audio(); toggleSleep(); });
+  $('#bath').addEventListener('click', () => { audio(); toggleBath(); });
+  $('#sensorChip').addEventListener('click', enableSensors);
+  $('#sensorBtn').addEventListener('click', enableSensors);
 
-  function floatAt(text, x, y) {
-    const f = document.createElement('span');
-    f.className = 'float'; f.textContent = text;
-    f.style.left = x + 'px'; f.style.top = y + 'px';
-    scene.append(f);
-    f.addEventListener('animationend', () => f.remove());
-  }
-  function floatOverPet(text) {
-    const s = scene.getBoundingClientRect(), p = wrap.getBoundingClientRect();
-    floatAt(text, p.left - s.left + p.width / 2 + (Math.random() * 60 - 30), p.top - s.top + 10);
-  }
-
-  // Carinho / chocar o ovo
-  wrap.addEventListener('click', () => {
-    if (!S.born) {
-      S.taps++;
-      anim('wiggle');
-      if (S.taps >= 6) {
-        S.born = now(); S.last = now(); S.lastPoop = now();
-        render();
-        anim('jump');
-        floatOverPet('✨');
-        say('Oi! Eu sou ' + S.name + '! 💖', 3200);
-        return;
-      }
-      say(['Tem algo aqui dentro…', 'Craque!', 'Tá quase!', 'Mais um pouquinho…', 'Vai nascer!'][Math.min(S.taps - 1, 4)], 1600);
-      render();
-      return;
-    }
-    if (S.sleeping) { say('Zzz… me deixa dormir'); return; }
-    S.feliz = clamp(S.feliz + 3);
-    floatOverPet('♥');
-    anim('jump');
-    if (Math.random() < .35) say(['Hihi, cócegas!', 'Te amo, viu?', 'Mais carinho!', 'Que delícia 💕'][Math.floor(Math.random() * 4)], 1800);
-    render();
-  });
-
-  $('#feed').addEventListener('click', () => {
-    if (S.sleeping) return say('Zzz… agora não');
-    if (S.fome >= 95) return say('Tô cheinhe, obrigade!');
-    S.fome = clamp(S.fome + 25);
-    S.higiene = clamp(S.higiene - 2);
-    floatOverPet(['🍓', '🍙', '🍩', '🥕'][Math.floor(Math.random() * 4)]);
-    anim('chomp');
-    say(['Hmmm, que delícia!', 'Nham nham!', 'Amei!'][Math.floor(Math.random() * 3)], 1600);
-    render();
-  });
-
-  // Minijogo: pegar estrelinhas
-  let game = null;
-  $('#play').addEventListener('click', () => {
-    if (game) return;
-    if (S.sleeping) return say('Zzz… brinca amanhã?');
-    if (S.energia < 15) return say('Tô cansade demais pra brincar');
-    game = { left: 6, hits: 0, t: 0 };
-    say('Pega as estrelinhas!', 1500);
-    setTimeout(spawnStar, 500);
-  });
-  function spawnStar() {
-    if (!game) return;
-    if (!game.left) return endGame();
-    game.left--;
-    const b = document.createElement('button');
-    b.className = 'star'; b.textContent = '★'; b.setAttribute('aria-label', 'Pegar estrela');
-    b.style.left = (12 + Math.random() * 76) + '%';
-    b.style.top = (22 + Math.random() * 38) + '%';
-    b.addEventListener('click', e => {
-      e.stopPropagation();
-      clearTimeout(game.t);
-      game.hits++;
-      S.feliz = clamp(S.feliz + 4);
-      floatAt('+1', b.offsetLeft, b.offsetTop - 20);
-      b.remove();
-      render();
-      spawnStar();
-    });
-    scene.append(b);
-    game.t = setTimeout(() => { b.remove(); spawnStar(); }, 1300);
-  }
-  function endGame() {
-    const h = game.hits;
-    game = null;
-    S.energia = clamp(S.energia - 10);
-    S.fome = clamp(S.fome - 5);
-    S.feliz = clamp(S.feliz + 5);
-    anim('jump');
-    say(h >= 5 ? 'Arrasou! Você é ícone 💖' : h >= 3 ? 'Que divertido!' : 'Bora de novo?', 2400);
-    render();
-  }
-
-  $('#sleep').addEventListener('click', () => {
-    if (game) return;
-    if (S.sleeping) {
-      S.sleeping = false;
-      say(S.energia < 60 ? 'Ainda tô com soninho…' : 'Bom dia, flor do dia! ☀️');
-    } else {
-      if (S.energia > 90) return say('Mas eu nem tô com sono!');
-      S.sleeping = true;
-      say('Boa noite… 🌙', 1800);
-    }
-    render();
-  });
-
-  $('#bath').addEventListener('click', () => {
-    if (S.sleeping) return say('Zzz… banho depois');
-    const wasDirty = S.higiene < 90 || S.poops > 0;
-    S.higiene = 100; S.poops = 0;
-    S.feliz = clamp(S.feliz + (wasDirty ? 6 : -2));
-    for (let i = 0; i < 4; i++) setTimeout(() => floatOverPet('🫧'), i * 140);
-    anim('wiggle');
-    say(wasDirty ? 'Cheirosinhe e diva ✨' : 'De novo?! Já tô limpinhe');
-    render();
-  });
-
-  // Personalização
   const sheet = $('#sheet'), back = $('#sheetBack'), nameInput = $('#nameInput');
   function buildChoices() {
     const colors = $('#colors'), accs = $('#accs');
@@ -634,17 +1535,22 @@ body {
       const b = document.createElement('button');
       b.className = 'swatch'; b.style.background = c; b.setAttribute('aria-label', label);
       b.setAttribute('aria-pressed', S.color === c);
-      b.addEventListener('click', () => { S.color = c; buildChoices(); render(); });
+      b.addEventListener('click', () => { S.color = c; buildChoices(); syncUI(); });
       colors.append(b);
     });
     ACCS.forEach(([a, label]) => {
       const b = document.createElement('button');
       b.className = 'chip'; b.textContent = label;
       b.setAttribute('aria-pressed', S.acc === a);
-      b.addEventListener('click', () => { S.acc = a; buildChoices(); render(); });
+      b.addEventListener('click', () => { S.acc = a; buildChoices(); syncUI(); });
       accs.append(b);
     });
+    $('#soundBtn').setAttribute('aria-pressed', S.sound);
+    $('#hapticBtn').setAttribute('aria-pressed', S.haptics);
+    updateSensorUI();
   }
+  $('#soundBtn').addEventListener('click', () => { S.sound = !S.sound; buildChoices(); save(); if (S.sound) sfx.boop(); });
+  $('#hapticBtn').addEventListener('click', () => { S.haptics = !S.haptics; buildChoices(); save(); haptic(); });
   let resetArmed = false;
   function openSheet() {
     nameInput.value = S.name;
@@ -656,7 +1562,7 @@ body {
     const n = nameInput.value.trim();
     if (n) S.name = n;
     sheet.hidden = back.hidden = true;
-    render();
+    syncUI();
   }
   $('#openSheet').addEventListener('click', openSheet);
   $('#closeSheet').addEventListener('click', closeSheet);
@@ -664,19 +1570,39 @@ body {
   nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') nameInput.blur(); });
   $('#reset').addEventListener('click', () => {
     if (!resetArmed) { resetArmed = true; $('#reset').textContent = 'Toque de novo pra confirmar'; return; }
-    const keep = { name: S.name, color: S.color, acc: S.acc };
+    const keep = { name: S.name, color: S.color, acc: S.acc, sound: S.sound, haptics: S.haptics, tips: S.tips };
     S = { ...fresh(), ...keep };
+    game = null; stars = []; food = null; bath = null; particles = [];
     sheet.hidden = back.hidden = true;
-    render();
+    setRadius();
+    syncUI();
     say('Um ovo novinho!', 2000);
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
 
-  render();
-  setTimeout(() => say(S.born ? (needMsg() || 'Que saudade de você! 💕') : 'Toque no ovo pra chocar!', 3000), 400);
-  setInterval(render, 5000);
-  setInterval(() => { if (!game && sheet.hidden) say(needMsg(), 2600); }, 40000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+  // Volta pro app: o bichinho percebe
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      running = false;
+      S.lastSeen = now(); save();
+    } else {
+      const away = now() - S.lastSeen;
+      syncUI();
+      greetReturn(away);
+      running = true; lastT = performance.now();
+      requestAnimationFrame(frame);
+    }
+  });
+
+  new ResizeObserver(resize).observe(scene);
+  resize();
+  const awayAtLoad = now() - S.lastSeen;
+  syncUI();
+  if (S.born) { pet.x = W / 2; pet.y = floorY - pet.r * .9; }
+  updateSensorUI();
+  setTimeout(() => greetReturn(Math.max(awayAtLoad, 15e3)), 500);
+  setInterval(syncUI, 5000);
+  requestAnimationFrame(frame);
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
