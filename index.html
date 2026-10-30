@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Bichinho de Bolso</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bichinho">
+<meta name="theme-color" content="#EEE8F6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: uma tela só, coluna estreita — cabeçalho, cenário com o bichinho, barras de status, botões de ação. */
+:root {
+  --bg: #EEE8F6;
+  --surface: #FFFFFF;
+  --ink: #2A2140;
+  --muted: #6E6585;
+  --line: #DCD3EA;
+  --accent: #E0457B;
+  --accent-ink: #FFFFFF;
+  --sky: #CFE6F5;
+  --sky-night: #2E3560;
+  --floor: #F4D9BE;
+  --floor-night: #4A3D57;
+  --good: #34995F;
+  --warn: #D9961A;
+  --crit: #D9483F;
+  --egg: #FFF6E5;
+  --font-display: "Baloo 2", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
+  --font-body: "Nunito", ui-rounded, system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17131F; --surface: #231D30; --ink: #F2EDF9; --muted: #A79FBA; --line: #3A3149;
+    --accent: #FF6F9F; --accent-ink: #1B1024;
+    --sky: #3B4A72; --sky-night: #1B2040; --floor: #5A4A55; --floor-night: #30283A;
+    --good: #5CC98A; --warn: #F0B54A; --crit: #FF7A70; --egg: #FBEFD9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17131F; --surface: #231D30; --ink: #F2EDF9; --muted: #A79FBA; --line: #3A3149;
+  --accent: #FF6F9F; --accent-ink: #1B1024;
+  --sky: #3B4A72; --sky-night: #1B2040; --floor: #5A4A55; --floor-night: #30283A;
+  --good: #5CC98A; --warn: #F0B54A; --crit: #FF7A70; --egg: #FBEFD9;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 500 16px/1.4 var(--font-body);
+  -webkit-user-select: none; user-select: none;
+  overscroll-behavior: none;
+}
+.app {
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-block: max(12px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Cabeçalho */
+.top { display: flex; align-items: center; gap: 12px; }
+.who { flex: 1; min-width: 0; }
+.who h1 {
+  margin: 0; font: 800 1.75rem/1 var(--font-display);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.who p { margin: 2px 0 0; color: var(--muted); font-size: .85rem; font-weight: 700; }
+.icon-btn {
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+  font-size: 1.15rem; cursor: pointer;
+}
+
+/* Cenário */
+.scene {
+  position: relative; flex: 1; min-height: 240px; overflow: hidden;
+  border-radius: 28px;
+  background: linear-gradient(var(--sky) 0 70%, var(--floor) 70% 100%);
+  transition: background .6s;
+  touch-action: manipulation;
+}
+.scene.night { background: linear-gradient(var(--sky-night) 0 70%, var(--floor-night) 70% 100%); }
+.scene::before {
+  content: ""; position: absolute; inset: 0 0 30% 0; opacity: 0; transition: opacity .6s;
+  background:
+    radial-gradient(2px 2px at 15% 20%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 35% 45%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 62% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 80% 40%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 90% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 48% 8%, #fff 50%, transparent 51%);
+}
+.scene.night::before { opacity: .9; }
+.sun {
+  position: absolute; top: 18px; right: 22px; width: 44px; height: 44px; border-radius: 50%;
+  background: #FFD45C; box-shadow: 0 0 0 8px rgb(255 212 92 / .25);
+  transition: background .6s, box-shadow .6s;
+}
+.scene.night .sun { background: #F4F0DC; box-shadow: inset -12px -4px 0 0 var(--sky-night); }
+
+.pet-wrap {
+  position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%);
+  border: 0; background: none; padding: 0; cursor: pointer; line-height: 0;
+}
+.pet-wrap:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 24px; }
+.pet-wrap svg { width: calc(var(--scale, 1) * min(220px, 52vw)); height: auto; overflow: visible; transition: width .8s; }
+
+.bob { animation: bob 2.6s ease-in-out infinite; transform-origin: 100px 180px; }
+@keyframes bob { 50% { transform: translateY(-4px) scaleY(1.02); } }
+.asleep .bob { animation-duration: 4.5s; }
+.blink { animation: blink 4.2s infinite; transform-origin: 100px 105px; }
+@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+
+.jump { animation: jump .6s cubic-bezier(.3,1.6,.5,1); }
+@keyframes jump { 40% { transform: translate(-50%, -38px); } }
+.wiggle { animation: wiggle .5s; }
+@keyframes wiggle { 25% { transform: translateX(-50%) rotate(-8deg); } 75% { transform: translateX(-50%) rotate(8deg); } }
+.chomp { animation: chomp .5s; }
+@keyframes chomp { 30% { transform: translateX(-50%) scale(1.08, .92); } 60% { transform: translateX(-50%) scale(.96, 1.04); } }
+
+/* Partes do bichinho */
+.body { fill: var(--pet, #FF8FB1); }
+.belly { fill: #fff; opacity: .45; }
+.ink { fill: #2A2140; }
+.shine { fill: #fff; }
+.stroke { fill: none; stroke: #2A2140; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.cheek { fill: #FF5E8A; opacity: .35; }
+.shadow { fill: #000; opacity: .12; }
+.eyes, .mouth, .brows, .acc { display: none; }
+.pet[data-mood="happy"] .eyes.happy, .pet[data-mood="happy"] .m-happy,
+.pet[data-mood="ok"] .eyes.open, .pet[data-mood="ok"] .m-ok,
+.pet[data-mood="sad"] .eyes.open, .pet[data-mood="sad"] .brows, .pet[data-mood="sad"] .m-sad,
+.pet[data-mood="sleep"] .eyes.closed, .pet[data-mood="sleep"] .m-sleep { display: inline; }
+.pet[data-acc="bow"] .acc-bow, .pet[data-acc="glasses"] .acc-glasses,
+.pet[data-acc="crown"] .acc-crown, .pet[data-acc="flag"] .acc-flag { display: inline; }
+.egg-shell { fill: var(--egg); stroke: #2A2140; stroke-width: 4; }
+.egg-spot { fill: var(--accent); opacity: .55; }
+.crack { transition: opacity .3s; }
+
+.zzz {
+  position: absolute; left: 58%; bottom: 52%; font: 800 1.4rem var(--font-display); color: #fff;
+  opacity: 0; pointer-events: none;
+}
+.asleep .zzz { animation: zzz 2.4s ease-in infinite; }
+@keyframes zzz { 0% { opacity: 0; transform: translate(0, 0) scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(26px, -50px) scale(1.2); } }
+
+.bubble {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
+  max-width: calc(100% - 100px); padding: 8px 14px; border-radius: 18px;
+  background: var(--surface); color: var(--ink); font-weight: 800; font-size: .95rem; text-align: center;
+  box-shadow: 0 4px 0 rgb(0 0 0 / .08);
+  transition: opacity .25s, transform .25s;
+}
+.bubble.off { opacity: 0; transform: translate(-50%, -6px); }
+
+.poops { position: absolute; inset: auto 0 6% 0; height: 0; }
+.poop { position: absolute; bottom: 0; font-size: 1.7rem; line-height: 1; }
+
+.float {
+  position: absolute; pointer-events: none; font: 800 1.4rem var(--font-display); color: var(--accent);
+  animation: floatUp 1s ease-out forwards;
+}
+@keyframes floatUp { from { opacity: 1; transform: translate(-50%, 0) scale(.8); } to { opacity: 0; transform: translate(-50%, -70px) scale(1.3); } }
+
+.star {
+  position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border: 0; border-radius: 50%;
+  background: rgb(255 255 255 / .55); color: #F5B400; font-size: 2.2rem; line-height: 56px; cursor: pointer;
+  animation: pop .25s ease-out;
+}
+@keyframes pop { from { transform: scale(0); } }
+
+/* Status */
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.stat { min-width: 0; }
+.stat-row { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 800; }
+.stat-row span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+.track { height: 10px; margin-top: 4px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; background: var(--good); transition: width .5s, background .5s; }
+.stat[data-level="warn"] .fill { background: var(--warn); }
+.stat[data-level="crit"] .fill { background: var(--crit); }
+
+/* Ações */
+.actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.act {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 4px 8px; border: 1.5px solid var(--line); border-radius: 20px;
+  background: var(--surface); color: var(--ink); font: 800 .8rem var(--font-body); cursor: pointer;
+  transition: transform .1s;
+}
+.act span { font-size: 1.6rem; line-height: 1.1; }
+.act:active { transform: scale(.94); }
+.act:disabled { opacity: .45; }
+.act:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, .primary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Painel de personalização */
+.sheet-back { position: fixed; inset: 0; background: rgb(10 5 20 / .45); z-index: 20; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 21;
+  max-width: 480px; margin: 0 auto; max-height: 85%; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 18px;
+  padding-block: 20px max(20px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  border-radius: 28px 28px 0 0; background: var(--surface); color: var(--ink);
+  -webkit-user-select: text; user-select: text;
+}
+.sheet h2 { margin: 0; font: 800 1.4rem/1 var(--font-display); }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field > label, .field > .label { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.field input {
+  padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px;
+  background: var(--bg); color: var(--ink); font: 700 1rem var(--font-body);
+}
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
+.swatch[aria-pressed="true"] { border-color: var(--ink); }
+.chip {
+  padding: 8px 14px; border-radius: 99px; border: 1.5px solid var(--line);
+  background: var(--bg); color: var(--ink); font: 800 .85rem var(--font-body); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.sheet-foot { display: flex; gap: 10px; align-items: center; }
+.primary {
+  flex: 1; padding: 14px; border: 0; border-radius: 16px;
+  background: var(--accent); color: var(--accent-ink); font: 800 1rem var(--font-body); cursor: pointer;
+}
+.danger { background: none; border: 0; color: var(--crit); font: 800 .85rem var(--font-body); cursor: pointer; padding: 10px; }
+.hint { margin: 0; color: var(--muted); font-size: .8rem; }
+
+@media (max-height: 640px) {
+  .app { gap: 10px; }
+  .act { padding-block: 6px; }
+  .act span { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div class="who">
+      <h1 id="name">Bolinha</h1>
+      <p id="age">Um ovo misterioso</p>
+    </div>
+    <button class="icon-btn" id="openSheet" aria-label="Personalizar">✎</button>
+  </header>
+
+  <section class="scene" id="scene" aria-label="Casinha do bichinho">
+    <div class="sun"></div>
+    <div class="bubble off" id="bubble" role="status" aria-live="polite"></div>
+    <div class="poops" id="poops"></div>
+    <div class="zzz">z</div>
+
+    <button class="pet-wrap" id="petWrap" aria-label="Fazer carinho">
+      <svg id="egg" viewBox="0 0 200 200" aria-hidden="true">
+        <ellipse class="shadow" cx="100" cy="190" rx="50" ry="7"/>
+        <g class="bob">
+          <path class="egg-shell" d="M100 30C145 30 165 105 165 130C165 168 136 188 100 188C64 188 35 168 35 130C35 105 55 30 100 30Z"/>
+          <ellipse class="egg-spot" cx="78" cy="88" rx="12" ry="9"/>
+          <ellipse class="egg-spot" cx="128" cy="120" rx="15" ry="11"/>
+          <ellipse class="egg-spot" cx="85" cy="152" rx="10" ry="7"/>
+          <path id="crack" class="stroke crack" style="opacity:0" d="M52 112L68 102L82 116L98 98L114 114L130 100L148 110"/>
+        </g>
+      </svg>
+
+      <svg id="pet" class="pet" viewBox="0 0 200 200" data-mood="ok" data-acc="none" hidden aria-hidden="true">
+        <ellipse class="shadow" cx="100" cy="184" rx="56" ry="8"/>
+        <g class="bob">
+          <g class="acc acc-flag">
+            <path class="stroke" d="M172 64V156"/>
+            <rect x="172" y="60" width="30" height="4.5" fill="#E40303"/>
+            <rect x="172" y="64.5" width="30" height="4.5" fill="#FF8C00"/>
+            <rect x="172" y="69" width="30" height="4.5" fill="#FFED00"/>
+            <rect x="172" y="73.5" width="30" height="4.5" fill="#008026"/>
+            <rect x="172" y="78" width="30" height="4.5" fill="#004DFF"/>
+            <rect x="172" y="82.5" width="30" height="4.5" fill="#750787"/>
+            <ellipse class="body" cx="166" cy="132" rx="11" ry="9"/>
+          </g>
+          <circle class="body" cx="70" cy="62" r="15"/>
+          <circle class="body" cx="130" cy="62" r="15"/>
+          <ellipse class="body" cx="100" cy="116" rx="68" ry="62"/>
+          <ellipse class="belly" cx="100" cy="138" rx="40" ry="30"/>
+          <ellipse class="body" cx="72" cy="174" rx="17" ry="9"/>
+          <ellipse class="body" cx="128" cy="174" rx="17" ry="9"/>
+
+          <g class="eyes open"><g class="blink">
+            <ellipse class="ink" cx="78" cy="105" rx="7.5" ry="9.5"/><circle class="shine" cx="80.5" cy="101.5" r="2.8"/>
+            <ellipse class="ink" cx="122" cy="105" rx="7.5" ry="9.5"/><circle class="shine" cx="124.5" cy="101.5" r="2.8"/>
+          </g></g>
+          <g class="eyes happy"><path class="stroke" d="M69 108Q78 96 87 108"/><path class="stroke" d="M113 108Q122 96 131 108"/></g>
+          <g class="eyes closed"><path class="stroke" d="M69 104Q78 113 87 104"/><path class="stroke" d="M113 104Q122 113 131 104"/></g>
+          <g class="brows"><path class="stroke" d="M67 88L86 93"/><path class="stroke" d="M133 88L114 93"/></g>
+
+          <ellipse class="cheek" cx="62" cy="123" rx="10" ry="6"/>
+          <ellipse class="cheek" cx="138" cy="123" rx="10" ry="6"/>
+
+          <path class="mouth m-happy stroke" d="M87 124Q100 140 113 124"/>
+          <path class="mouth m-ok stroke" d="M92 126Q100 132 108 126"/>
+          <path class="mouth m-sad stroke" d="M89 133Q100 122 111 133"/>
+          <ellipse class="mouth m-sleep ink" cx="100" cy="129" rx="4" ry="3"/>
+
+          <g class="acc acc-bow">
+            <path d="M100 58L80 45V71Z" fill="#E0457B"/><path d="M100 58L120 45V71Z" fill="#E0457B"/>
+            <circle cx="100" cy="58" r="6" fill="#B82E5E"/>
+          </g>
+          <g class="acc acc-glasses">
+            <circle cx="78" cy="105" r="15" fill="rgb(255 255 255 / .18)" stroke="#2A2140" stroke-width="4"/>
+            <circle cx="122" cy="105" r="15" fill="rgb(255 255 255 / .18)" stroke="#2A2140" stroke-width="4"/>
+            <path class="stroke" d="M93 104H107"/>
+          </g>
+          <g class="acc acc-crown">
+            <path d="M76 60L82 34L93 49L100 28L107 49L118 34L124 60Z" fill="#F5C542" stroke="#2A2140" stroke-width="4" stroke-linejoin="round"/>
+            <circle cx="100" cy="50" r="4" fill="#E0457B"/>
+          </g>
+        </g>
+      </svg>
+    </button>
+  </section>
+
+  <section class="stats" aria-label="Como o bichinho está">
+    <div class="stat" data-key="fome"><div class="stat-row"><span>Barriga</span><span>0</span></div><div class="track" role="progressbar" aria-label="Barriga" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div></div>
+    <div class="stat" data-key="feliz"><div class="stat-row"><span>Alegria</span><span>0</span></div><div class="track" role="progressbar" aria-label="Alegria" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div></div>
+    <div class="stat" data-key="energia"><div class="stat-row"><span>Energia</span><span>0</span></div><div class="track" role="progressbar" aria-label="Energia" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div></div>
+    <div class="stat" data-key="higiene"><div class="stat-row"><span>Higiene</span><span>0</span></div><div class="track" role="progressbar" aria-label="Higiene" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div></div>
+  </section>
+
+  <nav class="actions" aria-label="Cuidar">
+    <button class="act" id="feed"><span>🍓</span>Comer</button>
+    <button class="act" id="play"><span>⭐</span>Brincar</button>
+    <button class="act" id="sleep"><span>🌙</span><b id="sleepLabel">Dormir</b></button>
+    <button class="act" id="bath"><span>🫧</span>Banho</button>
+  </nav>
+</main>
+
+<div class="sheet-back" id="sheetBack" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <h2 id="sheetTitle">Personalizar</h2>
+  <div class="field">
+    <label for="nameInput">Nome</label>
+    <input id="nameInput" maxlength="16" autocomplete="off" enterkeyhint="done">
+  </div>
+  <div class="field">
+    <span class="label">Cor</span>
+    <div class="row" id="colors"></div>
+  </div>
+  <div class="field">
+    <span class="label">Acessório</span>
+    <div class="row" id="accs"></div>
+  </div>
+  <p class="hint">No iPhone: abra no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”.</p>
+  <div class="sheet-foot">
+    <button class="danger" id="reset">Começar de novo</button>
+    <button class="primary" id="closeSheet">Pronto</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const KEY = 'bichinho-v1';
+  const HOUR = 36e5, DAY = 864e5, POOP_EVERY = 2.5 * HOUR;
+  const COLORS = [['#FF8FB1', 'Chiclete'], ['#8FD4FF', 'Céu'], ['#A8E68A', 'Limão'], ['#FFC86B', 'Manga'], ['#C9A3FF', 'Lavanda'], ['#FF9E7A', 'Pêssego']];
+  const ACCS = [['none', 'Nada'], ['bow', 'Laço'], ['glasses', 'Óculos'], ['crown', 'Coroa'], ['flag', 'Bandeirinha']];
+  const LABELS = { fome: 'Barriga', feliz: 'Alegria', energia: 'Energia', higiene: 'Higiene' };
+
+  const $ = s => document.querySelector(s);
+  const clamp = v => Math.max(0, Math.min(100, v));
+  const now = () => Date.now();
+
+  const fresh = () => ({
+    name: 'Bolinha', born: null, taps: 0, last: now(), lastPoop: now(),
+    fome: 80, feliz: 80, energia: 85, higiene: 95, poops: 0, sleeping: false,
+    color: COLORS[0][0], acc: 'none'
+  });
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? { ...fresh(), ...s } : null; }
+    catch (e) { return null; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  let S = load() || fresh();
+
+  // O tempo passa mesmo com o app fechado: aplica o desgaste desde a última visita.
+  function tick() {
+    const t = now();
+    const h = Math.min((t - S.last) / HOUR, 48);
+    S.last = t;
+    if (!S.born || h <= 0) return;
+    S.fome = clamp(S.fome - 7 * h);
+    if (S.sleeping) {
+      S.energia = clamp(S.energia + 22 * h);
+      if (S.energia >= 100) S.sleeping = false;
+    } else {
+      S.energia = clamp(S.energia - 5 * h);
+    }
+    if (t - S.lastPoop > 10 * POOP_EVERY) S.lastPoop = t - POOP_EVERY;
+    while (t - S.lastPoop > POOP_EVERY) { S.lastPoop += POOP_EVERY; if (S.poops < 3) S.poops++; }
+    S.higiene = clamp(S.higiene - (3 + S.poops * 3) * h);
+    const sadness = 4 + (S.fome < 25 ? 6 : 0) + (S.higiene < 25 ? 4 : 0) + (S.energia < 15 ? 3 : 0);
+    S.feliz = clamp(S.feliz - sadness * h);
+  }
+
+  function mood() {
+    if (S.sleeping) return 'sleep';
+    const min = Math.min(S.fome, S.feliz, S.energia, S.higiene);
+    if (min < 22) return 'sad';
+    if ((S.fome + S.feliz + S.energia + S.higiene) / 4 > 70) return 'happy';
+    return 'ok';
+  }
+  function stage() {
+    const d = (now() - S.born) / DAY;
+    if (d < 1) return ['Bebê', .72];
+    if (d < 4) return ['Jovem', .86];
+    return ['Adulte', 1];
+  }
+  function ageText() {
+    if (!S.born) return S.taps ? 'O ovo está se mexendo…' : 'Um ovo misterioso · toque nele';
+    const ms = now() - S.born;
+    const t = ms < HOUR ? Math.max(1, Math.floor(ms / 6e4)) + ' min'
+      : ms < DAY ? Math.floor(ms / HOUR) + ' h'
+      : Math.floor(ms / DAY) + (ms < 2 * DAY ? ' dia' : ' dias');
+    return stage()[0] + ' · ' + t + (S.sleeping ? ' · dormindo' : '');
+  }
+  function needMsg() {
+    if (S.sleeping) return null;
+    const needs = [['fome', 'Tô com fominha 🥺'], ['higiene', 'Preciso de um banho…'], ['energia', 'Tô morrendo de sono'], ['feliz', 'Brinca comigo?']];
+    const [k, msg] = needs.reduce((a, b) => S[b[0]] < S[a[0]] ? b : a);
+    return S[k] < 35 ? msg : null;
+  }
+
+  const scene = $('#scene'), wrap = $('#petWrap'), pet = $('#pet'), egg = $('#egg');
+
+  function render() {
+    tick();
+    const hatched = !!S.born;
+    egg.toggleAttribute('hidden', hatched);
+    pet.toggleAttribute('hidden', !hatched);
+    $('#crack').style.opacity = S.taps >= 3 ? 1 : 0;
+    if (hatched) {
+      pet.dataset.mood = mood();
+      pet.dataset.acc = S.acc;
+      pet.style.setProperty('--pet', S.color);
+      wrap.style.setProperty('--scale', stage()[1]);
+    } else {
+      wrap.style.setProperty('--scale', .78);
+    }
+    const hr = new Date().getHours();
+    scene.classList.toggle('night', S.sleeping || hr >= 19 || hr < 6);
+    scene.classList.toggle('asleep', S.sleeping);
+    wrap.setAttribute('aria-label', hatched ? 'Fazer carinho em ' + S.name : 'Tocar no ovo');
+
+    $('#name').textContent = S.name;
+    $('#age').textContent = ageText();
+
+    const poops = $('#poops');
+    if (poops.childElementCount !== S.poops) {
+      poops.innerHTML = '';
+      ['10%', '78%', '24%'].slice(0, S.poops).forEach(left => {
+        const p = document.createElement('span');
+        p.className = 'poop'; p.textContent = '💩'; p.style.left = left;
+        poops.append(p);
+      });
+    }
+
+    document.querySelectorAll('.stat').forEach(el => {
+      const v = Math.round(S[el.dataset.key]);
+      el.dataset.level = v < 25 ? 'crit' : v < 50 ? 'warn' : 'good';
+      el.querySelector('.stat-row span:last-child').textContent = v;
+      el.querySelector('.fill').style.width = v + '%';
+      el.querySelector('.track').setAttribute('aria-valuenow', v);
+    });
+    document.querySelectorAll('.act').forEach(b => { b.disabled = !hatched; });
+    $('#sleepLabel').textContent = S.sleeping ? 'Acordar' : 'Dormir';
+    save();
+  }
+
+  let sayTimer;
+  function say(text, ms = 2600) {
+    if (!text) return;
+    const b = $('#bubble');
+    b.textContent = text;
+    b.classList.remove('off');
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(() => b.classList.add('off'), ms);
+  }
+  function anim(cls) {
+    wrap.classList.remove('jump', 'wiggle', 'chomp');
+    void wrap.offsetWidth;
+    wrap.classList.add(cls);
+  }
+  wrap.addEventListener('animationend', () => wrap.classList.remove('jump', 'wiggle', 'chomp'));
+
+  function floatAt(text, x, y) {
+    const f = document.createElement('span');
+    f.className = 'float'; f.textContent = text;
+    f.style.left = x + 'px'; f.style.top = y + 'px';
+    scene.append(f);
+    f.addEventListener('animationend', () => f.remove());
+  }
+  function floatOverPet(text) {
+    const s = scene.getBoundingClientRect(), p = wrap.getBoundingClientRect();
+    floatAt(text, p.left - s.left + p.width / 2 + (Math.random() * 60 - 30), p.top - s.top + 10);
+  }
+
+  // Carinho / chocar o ovo
+  wrap.addEventListener('click', () => {
+    if (!S.born) {
+      S.taps++;
+      anim('wiggle');
+      if (S.taps >= 6) {
+        S.born = now(); S.last = now(); S.lastPoop = now();
+        render();
+        anim('jump');
+        floatOverPet('✨');
+        say('Oi! Eu sou ' + S.name + '! 💖', 3200);
+        return;
+      }
+      say(['Tem algo aqui dentro…', 'Craque!', 'Tá quase!', 'Mais um pouquinho…', 'Vai nascer!'][Math.min(S.taps - 1, 4)], 1600);
+      render();
+      return;
+    }
+    if (S.sleeping) { say('Zzz… me deixa dormir'); return; }
+    S.feliz = clamp(S.feliz + 3);
+    floatOverPet('♥');
+    anim('jump');
+    if (Math.random() < .35) say(['Hihi, cócegas!', 'Te amo, viu?', 'Mais carinho!', 'Que delícia 💕'][Math.floor(Math.random() * 4)], 1800);
+    render();
+  });
+
+  $('#feed').addEventListener('click', () => {
+    if (S.sleeping) return say('Zzz… agora não');
+    if (S.fome >= 95) return say('Tô cheinhe, obrigade!');
+    S.fome = clamp(S.fome + 25);
+    S.higiene = clamp(S.higiene - 2);
+    floatOverPet(['🍓', '🍙', '🍩', '🥕'][Math.floor(Math.random() * 4)]);
+    anim('chomp');
+    say(['Hmmm, que delícia!', 'Nham nham!', 'Amei!'][Math.floor(Math.random() * 3)], 1600);
+    render();
+  });
+
+  // Minijogo: pegar estrelinhas
+  let game = null;
+  $('#play').addEventListener('click', () => {
+    if (game) return;
+    if (S.sleeping) return say('Zzz… brinca amanhã?');
+    if (S.energia < 15) return say('Tô cansade demais pra brincar');
+    game = { left: 6, hits: 0, t: 0 };
+    say('Pega as estrelinhas!', 1500);
+    setTimeout(spawnStar, 500);
+  });
+  function spawnStar() {
+    if (!game) return;
+    if (!game.left) return endGame();
+    game.left--;
+    const b = document.createElement('button');
+    b.className = 'star'; b.textContent = '★'; b.setAttribute('aria-label', 'Pegar estrela');
+    b.style.left = (12 + Math.random() * 76) + '%';
+    b.style.top = (22 + Math.random() * 38) + '%';
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      clearTimeout(game.t);
+      game.hits++;
+      S.feliz = clamp(S.feliz + 4);
+      floatAt('+1', b.offsetLeft, b.offsetTop - 20);
+      b.remove();
+      render();
+      spawnStar();
+    });
+    scene.append(b);
+    game.t = setTimeout(() => { b.remove(); spawnStar(); }, 1300);
+  }
+  function endGame() {
+    const h = game.hits;
+    game = null;
+    S.energia = clamp(S.energia - 10);
+    S.fome = clamp(S.fome - 5);
+    S.feliz = clamp(S.feliz + 5);
+    anim('jump');
+    say(h >= 5 ? 'Arrasou! Você é ícone 💖' : h >= 3 ? 'Que divertido!' : 'Bora de novo?', 2400);
+    render();
+  }
+
+  $('#sleep').addEventListener('click', () => {
+    if (game) return;
+    if (S.sleeping) {
+      S.sleeping = false;
+      say(S.energia < 60 ? 'Ainda tô com soninho…' : 'Bom dia, flor do dia! ☀️');
+    } else {
+      if (S.energia > 90) return say('Mas eu nem tô com sono!');
+      S.sleeping = true;
+      say('Boa noite… 🌙', 1800);
+    }
+    render();
+  });
+
+  $('#bath').addEventListener('click', () => {
+    if (S.sleeping) return say('Zzz… banho depois');
+    const wasDirty = S.higiene < 90 || S.poops > 0;
+    S.higiene = 100; S.poops = 0;
+    S.feliz = clamp(S.feliz + (wasDirty ? 6 : -2));
+    for (let i = 0; i < 4; i++) setTimeout(() => floatOverPet('🫧'), i * 140);
+    anim('wiggle');
+    say(wasDirty ? 'Cheirosinhe e diva ✨' : 'De novo?! Já tô limpinhe');
+    render();
+  });
+
+  // Personalização
+  const sheet = $('#sheet'), back = $('#sheetBack'), nameInput = $('#nameInput');
+  function buildChoices() {
+    const colors = $('#colors'), accs = $('#accs');
+    colors.innerHTML = ''; accs.innerHTML = '';
+    COLORS.forEach(([c, label]) => {
+      const b = document.createElement('button');
+      b.className = 'swatch'; b.style.background = c; b.setAttribute('aria-label', label);
+      b.setAttribute('aria-pressed', S.color === c);
+      b.addEventListener('click', () => { S.color = c; buildChoices(); render(); });
+      colors.append(b);
+    });
+    ACCS.forEach(([a, label]) => {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = label;
+      b.setAttribute('aria-pressed', S.acc === a);
+      b.addEventListener('click', () => { S.acc = a; buildChoices(); render(); });
+      accs.append(b);
+    });
+  }
+  let resetArmed = false;
+  function openSheet() {
+    nameInput.value = S.name;
+    resetArmed = false; $('#reset').textContent = 'Começar de novo';
+    buildChoices();
+    sheet.hidden = back.hidden = false;
+  }
+  function closeSheet() {
+    const n = nameInput.value.trim();
+    if (n) S.name = n;
+    sheet.hidden = back.hidden = true;
+    render();
+  }
+  $('#openSheet').addEventListener('click', openSheet);
+  $('#closeSheet').addEventListener('click', closeSheet);
+  back.addEventListener('click', closeSheet);
+  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') nameInput.blur(); });
+  $('#reset').addEventListener('click', () => {
+    if (!resetArmed) { resetArmed = true; $('#reset').textContent = 'Toque de novo pra confirmar'; return; }
+    const keep = { name: S.name, color: S.color, acc: S.acc };
+    S = { ...fresh(), ...keep };
+    sheet.hidden = back.hidden = true;
+    render();
+    say('Um ovo novinho!', 2000);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
+
+  render();
+  setTimeout(() => say(S.born ? (needMsg() || 'Que saudade de você! 💕') : 'Toque no ovo pra chocar!', 3000), 400);
+  setInterval(render, 5000);
+  setInterval(() => { if (!game && sheet.hidden) say(needMsg(), 2600); }, 40000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
